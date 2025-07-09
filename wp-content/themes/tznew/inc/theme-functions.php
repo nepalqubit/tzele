@@ -120,28 +120,7 @@ function tznew_post_thumbnail($size = 'large', $class = '') {
     echo tznew_get_post_thumbnail(get_the_ID(), $size, $class);
 }
 
-/**
- * Safe ACF field getter with fallback
- */
-function tznew_get_field_safe($field_name, $post_id = false, $default = '') {
-    if (!function_exists('get_field')) {
-        return $default;
-    }
-    
-    $value = get_field($field_name, $post_id);
-    return !empty($value) ? $value : $default;
-}
-
-/**
- * Safe ACF repeater checker
- */
-function tznew_have_rows_safe($field_name, $post_id = false) {
-    if (!function_exists('have_rows')) {
-        return false;
-    }
-    
-    return have_rows($field_name, $post_id);
-}
+// ACF helper functions are now defined in acf-database-optimization.php
 
 /**
  * Get post excerpt with custom length

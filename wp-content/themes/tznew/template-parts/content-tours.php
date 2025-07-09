@@ -124,7 +124,7 @@ if (!defined('ABSPATH')) {
                             <?php if ($highlight) : ?>
                                 <li class="flex items-start text-gray-700">
                                     <i class="fas fa-check-circle text-green-500 mr-3 mt-1 flex-shrink-0" aria-hidden="true"></i>
-                                    <span class="text-lg leading-relaxed"><?php echo wp_kses_post($highlight); ?></span>
+                                    <span class="text-lg leading-relaxed"><?php echo wp_kses_post(is_string($highlight) ? $highlight : ''); ?></span>
                                 </li>
                             <?php endif; ?>
                         <?php endwhile; ?>
@@ -163,71 +163,7 @@ if (!defined('ABSPATH')) {
                         <?php esc_html_e('Itinerary', 'tznew'); ?>
                     </h2>
                     
-                    <?php if (!empty($elevation_data) && count($elevation_data) > 1) : ?>
-                        <div class="elevation-chart mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-100">
-                            <h3 class="text-lg font-semibold mb-3 text-blue-800 flex items-center">
-                                <i class="fas fa-chart-line mr-2 text-blue-600" aria-hidden="true"></i>
-                                <?php esc_html_e('Elevation Profile', 'tznew'); ?>
-                            </h3>
-                            <canvas id="elevationChart" width="400" height="200"></canvas>
-                        </div>
-                        
-                        <script>
-                        document.addEventListener('DOMContentLoaded', function() {
-                            const ctx = document.getElementById('elevationChart').getContext('2d');
-                            new Chart(ctx, {
-                                type: 'line',
-                                data: {
-                                    labels: <?php echo json_encode($day_labels); ?>,
-                                    datasets: [{
-                                        label: '<?php esc_html_e('Elevation (m)', 'tznew'); ?>',
-                                        data: <?php echo json_encode($elevation_data); ?>,
-                                        borderColor: 'rgb(34, 197, 94)',
-                                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
-                                        borderWidth: 3,
-                                        fill: true,
-                                        tension: 0.4,
-                                        pointBackgroundColor: 'rgb(34, 197, 94)',
-                                        pointBorderColor: '#fff',
-                                        pointBorderWidth: 2,
-                                        pointRadius: 5
-                                    }]
-                                },
-                                options: {
-                                    responsive: true,
-                                    maintainAspectRatio: false,
-                                    plugins: {
-                                        legend: {
-                                            display: true,
-                                            position: 'top'
-                                        }
-                                    },
-                                    scales: {
-                                        y: {
-                                            beginAtZero: false,
-                                            title: {
-                                                display: true,
-                                                text: '<?php esc_html_e('Elevation (meters)', 'tznew'); ?>'
-                                            },
-                                            grid: {
-                                                color: 'rgba(0, 0, 0, 0.1)'
-                                            }
-                                        },
-                                        x: {
-                                            title: {
-                                                display: true,
-                                                text: '<?php esc_html_e('Days', 'tznew'); ?>'
-                                            },
-                                            grid: {
-                                                color: 'rgba(0, 0, 0, 0.1)'
-                                            }
-                                        }
-                                    }
-                                }
-                            });
-                        });
-                        </script>
-                    <?php endif; ?>
+
                     
                     <?php
                     // Collect route coordinates for map
@@ -262,110 +198,7 @@ if (!defined('ABSPATH')) {
                         }
                     }
                     ?>
-                    
-                    <?php if (!empty($route_coordinates)) : ?>
-                        <div class="route-map mb-8 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                            <h3 class="text-lg font-bold mb-4 text-green-700 flex items-center">
-                                <i class="fas fa-map mr-2 text-green-600" aria-hidden="true"></i>
-                                <?php esc_html_e('Route Map', 'tznew'); ?>
-                            </h3>
-                            <div class="route-map-container">
-                                 <div id="tourRouteMap" style="height: 400px; width: 100%; border-radius: 8px;"></div>
-                             </div>
-                        </div>
-                        
-                        <script>
-                        document.addEventListener('DOMContentLoaded', function() {
-                            // Initialize the map
-                            const routeCoordinates = <?php echo json_encode($route_coordinates); ?>;
-                            
-                            if (routeCoordinates.length > 0) {
-                                // Calculate center point
-                                const centerLat = routeCoordinates.reduce((sum, coord) => sum + coord.lat, 0) / routeCoordinates.length;
-                                const centerLng = routeCoordinates.reduce((sum, coord) => sum + coord.lng, 0) / routeCoordinates.length;
-                                
-                                const map = L.map('tourRouteMap').setView([centerLat, centerLng], 10);
-                                
-                                // Add OpenStreetMap tiles
-                                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                                    attribution: '© OpenStreetMap contributors',
-                                    maxZoom: 18
-                                }).addTo(map);
-                                
-                                // Create route line coordinates
-                                const routeLineCoords = routeCoordinates.map(coord => [coord.lat, coord.lng]);
-                                
-                                // Add route line
-                                const routeLine = L.polyline(routeLineCoords, {
-                                    color: '#059669',
-                                    weight: 4,
-                                    opacity: 0.8,
-                                    smoothFactor: 1
-                                }).addTo(map);
-                                
-                                // Add markers for each day
-                                routeCoordinates.forEach((coord, index) => {
-                                    const isStart = index === 0;
-                                    const isEnd = index === routeCoordinates.length - 1;
-                                    
-                                    let markerColor = '#3B82F6'; // Default blue
-                                    let iconClass = 'fa-map-marker-alt';
-                                    
-                                    if (isStart) {
-                                        markerColor = '#10B981'; // Green for start
-                                        iconClass = 'fa-play';
-                                    } else if (isEnd) {
-                                        markerColor = '#EF4444'; // Red for end
-                                        iconClass = 'fa-flag-checkered';
-                                    }
-                                    
-                                    const customIcon = L.divIcon({
-                                        html: `<div style="background-color: ${markerColor}; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">${coord.day}</div>`,
-                                        className: 'custom-marker',
-                                        iconSize: [30, 30],
-                                        iconAnchor: [15, 15]
-                                    });
-                                    
-                                    // Transportation icon mapping
-                                    const transportIcons = {
-                        'walking': 'fa-walking',
-                        'bus': 'fa-bus',
-                        'car': 'fa-car',
-                        'jeep': 'fa-truck',
-                        'van': 'fa-shuttle-van',
-                        'motorbike': 'fa-motorcycle',
-                        'flight': 'fa-plane',
-                        'helicopter': 'fa-helicopter',
-                        'rest_day': 'fa-bed',
-                        'acclimatization': 'fa-mountain'
-                    };
-                                    
-                                    const transportIcon = coord.transportation && transportIcons[coord.transportation] ? transportIcons[coord.transportation] : 'fa-route';
-                                    
-                                    const popupContent = `
-                                        <div class="map-popup">
-                                            <h4 style="margin: 0 0 8px 0; font-weight: bold; color: #1F2937;">Day ${coord.day}: ${coord.title || 'Untitled'}</h4>
-                                            ${coord.place_name ? `<p style="margin: 0 0 4px 0; color: #6B7280;"><i class="fas fa-map-marker-alt" style="margin-right: 4px;"></i>${coord.place_name}</p>` : ''}
-                                            ${coord.transportation ? `<p style="margin: 0 0 4px 0; color: #6366F1;"><i class="fas ${transportIcon}" style="margin-right: 4px;"></i>Transportation: ${coord.transportation.charAt(0).toUpperCase() + coord.transportation.slice(1)}</p>` : ''}
-                                            ${coord.altitude ? `<p style="margin: 0 0 4px 0; color: #6B7280;"><i class="fas fa-mountain" style="margin-right: 4px;"></i>Altitude: ${Number(coord.altitude).toLocaleString()}m</p>` : ''}
-                                            <p style="margin: 0; color: #6B7280; font-size: 12px;"><i class="fas fa-crosshairs" style="margin-right: 4px;"></i>${coord.lat.toFixed(6)}, ${coord.lng.toFixed(6)}</p>
-                                        </div>
-                                    `;
-                                    
-                                    L.marker([coord.lat, coord.lng], { icon: customIcon })
-                                        .addTo(map)
-                                        .bindPopup(popupContent);
-                                });
-                                
-                                // Fit map to show all markers
-                                map.fitBounds(routeLine.getBounds(), { padding: [20, 20] });
-                                
-                                // Add map controls
-                                L.control.scale().addTo(map);
-                            }
-                        });
-                        </script>
-                    <?php endif; ?>
+
                     
                     <div class="space-y-4">
                         <?php 
@@ -688,6 +521,240 @@ if (!defined('ABSPATH')) {
                     <?php endif; ?>
                 </div>
             <?php endif; ?>
+            
+            <?php
+            // Elevation Profile section
+            if (tznew_have_rows_safe('itinerary')) :
+                // Collect elevation data for the chart
+                $elevation_data = [];
+                $day_labels = [];
+                $day_count_temp = 1;
+                
+                while (tznew_have_rows_safe('itinerary')) :
+                    tznew_the_row_safe();
+                    $altitude = tznew_get_sub_field_safe('altitude');
+                    $day_title = tznew_get_sub_field_safe('title');
+                    
+                    if ($altitude && is_numeric($altitude)) {
+                        $elevation_data[] = intval($altitude);
+                        $day_labels[] = 'Day ' . $day_count_temp;
+                    }
+                    $day_count_temp++;
+                endwhile;
+                
+                // Reset the loop for display
+                if (function_exists('reset_rows')) {
+                    reset_rows();
+                }
+                
+                if (!empty($elevation_data) && count($elevation_data) > 1) :
+            ?>
+                <div class="elevation-chart mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl shadow-sm border border-blue-100 hover:shadow-md transition-shadow duration-300">
+                    <h2 class="text-2xl font-bold mb-4 text-blue-800 border-b border-blue-200 pb-3 flex items-center">
+                        <i class="fas fa-chart-line mr-2 text-blue-600" aria-hidden="true"></i>
+                        <?php esc_html_e('Elevation Profile', 'tznew'); ?>
+                    </h2>
+                    <canvas id="elevationChart" width="400" height="200"></canvas>
+                </div>
+                
+                <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const ctx = document.getElementById('elevationChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: <?php echo json_encode($day_labels); ?>,
+                            datasets: [{
+                                label: '<?php esc_html_e('Elevation (m)', 'tznew'); ?>',
+                                data: <?php echo json_encode($elevation_data); ?>,
+                                borderColor: 'rgb(34, 197, 94)',
+                                backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.4,
+                                pointBackgroundColor: 'rgb(34, 197, 94)',
+                                pointBorderColor: '#fff',
+                                pointBorderWidth: 2,
+                                pointRadius: 5
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    position: 'top'
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: false,
+                                    title: {
+                                        display: true,
+                                        text: '<?php esc_html_e('Elevation (meters)', 'tznew'); ?>'
+                                    },
+                                    grid: {
+                                        color: 'rgba(0, 0, 0, 0.1)'
+                                    }
+                                },
+                                x: {
+                                    title: {
+                                        display: true,
+                                        text: '<?php esc_html_e('Days', 'tznew'); ?>'
+                                    },
+                                    grid: {
+                                        color: 'rgba(0, 0, 0, 0.1)'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                });
+                </script>
+            <?php 
+                endif;
+                
+                // Route Map section
+                // Collect route coordinates for map
+                $route_coordinates = array();
+                if (tznew_have_rows_safe('itinerary')) {
+                    $map_day_count = 1;
+                    while (tznew_have_rows_safe('itinerary')) {
+                        tznew_the_row_safe();
+                        $coordinates = tznew_get_sub_field_safe('coordinates');
+                        $day_title = tznew_get_sub_field_safe('title');
+                        $place_name = tznew_get_sub_field_safe('place_name');
+                        $altitude = tznew_get_sub_field_safe('altitude');
+                        $transportation = tznew_get_sub_field_safe('transportation');
+                        
+                        if ($coordinates && isset($coordinates['latitude']) && isset($coordinates['longitude'])) {
+                            $route_coordinates[] = array(
+                                'day' => $map_day_count,
+                                'lat' => floatval($coordinates['latitude']),
+                                'lng' => floatval($coordinates['longitude']),
+                                'title' => $day_title,
+                                'place_name' => $place_name,
+                                'altitude' => $altitude,
+                                'transportation' => $transportation
+                            );
+                        }
+                        $map_day_count++;
+                    }
+                    
+                    // Reset the loop
+                    if (function_exists('reset_rows')) {
+                        reset_rows();
+                    }
+                }
+                
+                if (!empty($route_coordinates)) :
+            ?>
+                <div class="route-map mb-8 bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-300">
+                    <h2 class="text-2xl font-bold mb-4 text-green-700 border-b border-green-200 pb-3 flex items-center">
+                        <i class="fas fa-map mr-2 text-green-600" aria-hidden="true"></i>
+                        <?php esc_html_e('Route Map', 'tznew'); ?>
+                    </h2>
+                    <div class="route-map-container">
+                         <div id="tourRouteMap" style="height: 400px; width: 100%; border-radius: 8px;"></div>
+                     </div>
+                </div>
+                
+                <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    // Initialize the map
+                    const routeCoordinates = <?php echo json_encode($route_coordinates); ?>;
+                    
+                    if (routeCoordinates.length > 0) {
+                        // Calculate center point
+                        const centerLat = routeCoordinates.reduce((sum, coord) => sum + coord.lat, 0) / routeCoordinates.length;
+                        const centerLng = routeCoordinates.reduce((sum, coord) => sum + coord.lng, 0) / routeCoordinates.length;
+                        
+                        const map = L.map('tourRouteMap').setView([centerLat, centerLng], 10);
+                        
+                        // Add OpenStreetMap tiles
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                            attribution: '© OpenStreetMap contributors',
+                            maxZoom: 18
+                        }).addTo(map);
+                        
+                        // Create route line coordinates
+                        const routeLineCoords = routeCoordinates.map(coord => [coord.lat, coord.lng]);
+                        
+                        // Add route line
+                        const routeLine = L.polyline(routeLineCoords, {
+                            color: '#059669',
+                            weight: 4,
+                            opacity: 0.8,
+                            smoothFactor: 1
+                        }).addTo(map);
+                        
+                        // Add markers for each day
+                        routeCoordinates.forEach((coord, index) => {
+                            const isStart = index === 0;
+                            const isEnd = index === routeCoordinates.length - 1;
+                            
+                            let markerColor = '#3B82F6'; // Default blue
+                            let iconClass = 'fa-map-marker-alt';
+                            
+                            if (isStart) {
+                                markerColor = '#10B981'; // Green for start
+                                iconClass = 'fa-play';
+                            } else if (isEnd) {
+                                markerColor = '#EF4444'; // Red for end
+                                iconClass = 'fa-flag-checkered';
+                            }
+                            
+                            const customIcon = L.divIcon({
+                                html: `<div style="background-color: ${markerColor}; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">${coord.day}</div>`,
+                                className: 'custom-marker',
+                                iconSize: [30, 30],
+                                iconAnchor: [15, 15]
+                            });
+                            
+                            // Transportation icon mapping
+                            const transportIcons = {
+                                'walking': 'fa-walking',
+                                'bus': 'fa-bus',
+                                'car': 'fa-car',
+                                'jeep': 'fa-truck',
+                                'van': 'fa-shuttle-van',
+                                'motorbike': 'fa-motorcycle',
+                                'flight': 'fa-plane',
+                                'helicopter': 'fa-helicopter',
+                                'rest_day': 'fa-bed',
+                                'acclimatization': 'fa-mountain'
+                            };
+                            
+                            const transportIcon = coord.transportation && transportIcons[coord.transportation] ? transportIcons[coord.transportation] : 'fa-route';
+                            
+                            const popupContent = `
+                                <div class="map-popup">
+                                    <h4 style="margin: 0 0 8px 0; font-weight: bold; color: #1F2937;">Day ${coord.day}: ${coord.title || 'Untitled'}</h4>
+                                    ${coord.place_name ? `<p style="margin: 0 0 4px 0; color: #6B7280;"><i class="fas fa-map-marker-alt" style="margin-right: 4px;"></i>${coord.place_name}</p>` : ''}
+                                    ${coord.transportation ? `<p style="margin: 0 0 4px 0; color: #6366F1;"><i class="fas ${transportIcon}" style="margin-right: 4px;"></i>Transportation: ${coord.transportation.charAt(0).toUpperCase() + coord.transportation.slice(1)}</p>` : ''}
+                                    ${coord.altitude ? `<p style="margin: 0 0 4px 0; color: #6B7280;"><i class="fas fa-mountain" style="margin-right: 4px;"></i>Altitude: ${Number(coord.altitude).toLocaleString()}m</p>` : ''}
+                                    <p style="margin: 0; color: #6B7280; font-size: 12px;"><i class="fas fa-crosshairs" style="margin-right: 4px;"></i>${coord.lat.toFixed(6)}, ${coord.lng.toFixed(6)}</p>
+                                </div>
+                            `;
+                            
+                            L.marker([coord.lat, coord.lng], { icon: customIcon })
+                                .addTo(map)
+                                .bindPopup(popupContent);
+                        });
+                        
+                        // Fit map to show all markers
+                        map.fitBounds(routeLine.getBounds(), { padding: [20, 20] });
+                        
+                        // Add map controls
+                        L.control.scale().addTo(map);
+                    }
+                });
+                </script>
+            <?php 
+                endif;
+            endif; 
+            ?>
             
             <?php 
             // Gallery section

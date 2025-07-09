@@ -330,6 +330,35 @@ function tznew_register_taxonomies() {
     );
 
     register_taxonomy('acf_tag', array('blog'), $tag_args);
+
+    // FAQ Category Taxonomy for FAQ
+    $faq_category_labels = array(
+        'name'              => _x('FAQ Categories', 'taxonomy general name', 'tznew'),
+        'singular_name'     => _x('FAQ Category', 'taxonomy singular name', 'tznew'),
+        'search_items'      => __('Search FAQ Categories', 'tznew'),
+        'all_items'         => __('All FAQ Categories', 'tznew'),
+        'parent_item'       => __('Parent FAQ Category', 'tznew'),
+        'parent_item_colon' => __('Parent FAQ Category:', 'tznew'),
+        'edit_item'         => __('Edit FAQ Category', 'tznew'),
+        'update_item'       => __('Update FAQ Category', 'tznew'),
+        'add_new_item'      => __('Add New FAQ Category', 'tznew'),
+        'new_item_name'     => __('New FAQ Category Name', 'tznew'),
+        'menu_name'         => __('FAQ Categories', 'tznew'),
+    );
+
+    $faq_category_args = array(
+        'hierarchical'      => true,
+        'labels'            => $faq_category_labels,
+        'show_ui'           => true,
+        'show_admin_column' => true,
+        'query_var'         => true,
+        'rewrite'           => array('slug' => 'faq-category'),
+        'show_in_rest'      => true,
+        'rest_base'         => 'faq_category',
+        'rest_controller_class' => 'WP_REST_Terms_Controller',
+    );
+
+    register_taxonomy('faq_category', array('faq'), $faq_category_args);
 }
 add_action('init', 'tznew_register_taxonomies');
 

@@ -44,7 +44,7 @@ function tznew_enable_rest_api_for_taxonomies() {
     // Loop through each taxonomy and update show_in_rest
     foreach ($taxonomies as $taxonomy) {
         // Skip taxonomies that are not from our theme
-        if (!in_array($taxonomy->name, array('region', 'difficulty', 'tour_type', 'acf_tag'))) {
+        if (!in_array($taxonomy->name, array('region', 'difficulty', 'tour_type', 'acf_tag', 'faq_category'))) {
             continue;
         }
         

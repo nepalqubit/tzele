@@ -790,12 +790,12 @@ add_filter('manage_trekking_posts_columns', 'tznew_trekking_columns');
 function tznew_trekking_column_content($column, $post_id) {
     switch ($column) {
         case 'duration':
-            $duration = get_field('duration', $post_id);
+            $duration = tznew_get_field_safe('duration', $post_id);
             echo $duration ? esc_html($duration . ' Days') : '—';
             break;
             
         case 'difficulty':
-            $difficulty = get_field('difficulty', $post_id);
+            $difficulty = tznew_get_field_safe('difficulty', $post_id);
             echo $difficulty ? esc_html(ucfirst($difficulty)) : '—';
             break;
             
@@ -835,12 +835,12 @@ add_filter('manage_tours_posts_columns', 'tznew_tours_columns');
 function tznew_tours_column_content($column, $post_id) {
     switch ($column) {
         case 'duration':
-            $duration = get_field('duration', $post_id);
+            $duration = tznew_get_field_safe('duration', $post_id);
             echo $duration ? esc_html($duration . ' Days') : '—';
             break;
             
         case 'tour_type':
-            $tour_type = get_field('tour_type', $post_id);
+            $tour_type = tznew_get_field_safe('tour_type', $post_id);
             echo $tour_type ? esc_html(ucfirst($tour_type)) : '—';
             break;
             
@@ -976,6 +976,13 @@ if (version_compare(PHP_VERSION, '8.2.0', '>=')) {
         // Add #[AllowDynamicProperties] attribute equivalent handling
         // This is a placeholder for any dynamic property handling needed
     }
+}
+
+/**
+ * Helper function to display FAQs on tour and trekking pages
+ */
+function tznew_display_faqs() {
+    get_template_part('template-parts/faq-section');
 }
 
 /**

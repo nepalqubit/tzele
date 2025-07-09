@@ -195,7 +195,7 @@ get_header();
 										<?php if ($highlight) : ?>
 											<li class="flex items-start text-gray-700">
 												<i class="fas fa-check-circle text-green-500 mr-2 mt-1 flex-shrink-0"></i>
-												<span class="text-sm"><?php echo wp_kses_post($highlight); ?></span>
+												<span class="text-sm"><?php echo wp_kses_post(is_string($highlight) ? $highlight : ''); ?></span>
 											</li>
 										<?php endif; ?>
 									<?php endwhile; ?>
@@ -239,7 +239,7 @@ get_header();
 												<div class="flex-1">
 													<h4 class="font-medium text-gray-800 group-hover:text-blue-600 transition-colors duration-300 text-sm"><?php echo esc_html($trek->post_title); ?></h4>
 													<?php
-													$trek_duration = get_field('duration', $trek->ID);
+													$trek_duration = tznew_get_field_safe('duration', $trek->ID);
 													if ($trek_duration) :
 													?>
 														<p class="text-xs text-gray-500"><?php echo esc_html($trek_duration); ?> <?php echo esc_html(_n('Day', 'Days', intval($trek_duration), 'tznew')); ?></p>
@@ -258,6 +258,11 @@ get_header();
 				</div>
 			</div>
 		</div>
+
+		<?php
+		// Display FAQ section
+		tznew_display_faqs();
+		?>
 
 		<?php
 		// Previous/next post navigation.

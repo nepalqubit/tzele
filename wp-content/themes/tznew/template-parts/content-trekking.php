@@ -124,7 +124,7 @@ if (!defined('ABSPATH')) {
                             <?php if ($highlight) : ?>
                                 <li class="flex items-start text-gray-700">
                                     <i class="fas fa-check-circle text-green-500 mr-3 mt-1 flex-shrink-0" aria-hidden="true"></i>
-                                    <span class="text-lg leading-relaxed"><?php echo wp_kses_post($highlight); ?></span>
+                                    <span class="text-lg leading-relaxed"><?php echo wp_kses_post(is_string($highlight) ? $highlight : ''); ?></span>
                                 </li>
                             <?php endif; ?>
                         <?php endwhile; ?>
@@ -747,7 +747,7 @@ if (!defined('ABSPATH')) {
                                     <i class="fas fa-file-alt mr-2" aria-hidden="true"></i>
                                     <?php esc_html_e('Permit Options', 'tznew'); ?>
                                 </h3>
-                                <div class="text-gray-700"><?php echo wp_kses_post($permits['permit_options']); ?></div>
+                                <div class="text-gray-700"><?php echo wp_kses_post(is_string($permits['permit_options']) ? $permits['permit_options'] : ''); ?></div>
                             </div>
                         <?php endif; ?>
                         
@@ -757,7 +757,7 @@ if (!defined('ABSPATH')) {
                                     <i class="fas fa-user-tie mr-2" aria-hidden="true"></i>
                                     <?php esc_html_e('Guide Requirement', 'tznew'); ?>
                                 </h3>
-                                <div class="text-gray-700"><?php echo wp_kses_post($permits['guide_requirement']); ?></div>
+                                <div class="text-gray-700"><?php echo wp_kses_post(is_string($permits['guide_requirement']) ? $permits['guide_requirement'] : ''); ?></div>
                             </div>
                         <?php endif; ?>
                         
@@ -767,7 +767,7 @@ if (!defined('ABSPATH')) {
                                     <i class="fas fa-exclamation-triangle mr-2" aria-hidden="true"></i>
                                     <?php esc_html_e('Restricted Area Information', 'tznew'); ?>
                                 </h3>
-                                <div class="text-gray-700"><?php echo wp_kses_post($permits['restricted_area']); ?></div>
+                                <div class="text-gray-700"><?php echo wp_kses_post(is_string($permits['restricted_area']) ? $permits['restricted_area'] : ''); ?></div>
                             </div>
                         <?php endif; ?>
                     </div>

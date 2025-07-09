@@ -12,6 +12,9 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+// Include database optimization module
+require_once get_template_directory() . '/inc/acf-database-optimization.php';
+
 /**
  * Check if ACF Pro is active
  */
@@ -159,19 +162,19 @@ function tznew_register_acf_fields() {
                 ),
             ),
             array(
-                'key' => 'field_cost_info',
+                'key' => 'field_tour_cost_info',
                 'label' => 'Cost Information',
                 'name' => 'cost_info',
                 'type' => 'group',
                 'sub_fields' => array(
                     array(
-                        'key' => 'field_price_usd',
+                        'key' => 'field_tour_price_usd',
                         'label' => 'Price USD',
                         'name' => 'price_usd',
                         'type' => 'number',
                     ),
                     array(
-                        'key' => 'field_price_type',
+                        'key' => 'field_tour_price_type',
                         'label' => 'Pricing Type',
                         'name' => 'pricing_type',
                         'type' => 'select',
@@ -185,13 +188,13 @@ function tznew_register_acf_fields() {
                 ),
             ),
             array(
-                'key' => 'field_inclusion',
+                'key' => 'field_tour_inclusion',
                 'label' => 'Inclusion',
                 'name' => 'inclusion',
                 'type' => 'wysiwyg',
             ),
             array(
-                'key' => 'field_exclusion',
+                'key' => 'field_tour_exclusion',
                 'label' => 'Exclusion',
                 'name' => 'exclusion',
                 'type' => 'wysiwyg',
@@ -497,7 +500,7 @@ function tznew_register_acf_fields() {
                 'type' => 'group',
                 'sub_fields' => array(
                     array(
-                        'key' => 'field_permit_options',
+                        'key' => 'field_tour_permit_options',
                         'label' => 'Permits',
                         'name' => 'permit_options',
                         'type' => 'checkbox',
@@ -509,7 +512,7 @@ function tznew_register_acf_fields() {
                         'ui' => true,
                     ),
                     array(
-                        'key' => 'field_guide',
+                        'key' => 'field_tour_guide',
                         'label' => 'Guide Requirement',
                         'name' => 'guide_requirement',
                         'type' => 'radio',
@@ -520,7 +523,7 @@ function tznew_register_acf_fields() {
                         'ui' => true,
                     ),
                     array(
-                        'key' => 'field_restricted',
+                        'key' => 'field_tour_restricted',
                         'label' => 'Restricted Area',
                         'name' => 'restricted_area',
                         'type' => 'true_false',
@@ -573,7 +576,7 @@ function tznew_register_acf_fields() {
                 'type' => 'text',
             ),
             array(
-                'key' => 'field_itinerary',
+                'key' => 'field_tour_itinerary',
                 'label' => 'Itinerary Details',
                 'name' => 'itinerary',
                 'type' => 'repeater',
@@ -669,7 +672,7 @@ function tznew_register_acf_fields() {
                         'type' => 'repeater',
                         'sub_fields' => array(
                             array(
-                                'key' => 'field_tour_video_url',
+                                'key' => 'field_tour_video_url_item',
                                 'label' => 'Video URL',
                                 'name' => 'video_url',
                                 'type' => 'url',
@@ -677,19 +680,19 @@ function tznew_register_acf_fields() {
                         ),
                     ),
                     array(
-                        'key' => 'field_tour_coordinates',
+                        'key' => 'field_tour_coordinates_group',
                         'label' => 'Coordinates',
                         'name' => 'coordinates',
                         'type' => 'group',
                         'sub_fields' => array(
                             array(
-                                'key' => 'field_tour_latitude',
+                                'key' => 'field_tour_latitude_coord',
                                 'label' => 'Latitude',
                                 'name' => 'latitude',
                                 'type' => 'text',
                             ),
                             array(
-                                'key' => 'field_tour_longitude',
+                                'key' => 'field_tour_longitude_coord',
                                 'label' => 'Longitude',
                                 'name' => 'longitude',
                                 'type' => 'text',
@@ -735,97 +738,73 @@ function tznew_register_acf_fields() {
         ),
     ));
     
-    // FAQ Fields
+    // FAQ - Single Question & Answer Structure
     acf_add_local_field_group(array(
         'key' => 'group_faq',
-        'title' => 'FAQ Details',
+        'title' => 'FAQ',
         'fields' => array(
             array(
-                'key' => 'field_faq_categories',
-                'label' => 'FAQ Categories',
-                'name' => 'faq_categories',
-                'type' => 'repeater',
-                'instructions' => 'Add FAQ categories and questions',
-                'required' => 0,
-                'min' => 0,
-                'max' => 0,
-                'layout' => 'block',
-                'button_label' => 'Add Category',
-                'sub_fields' => array(
-                    array(
-                        'key' => 'field_category_name',
-                        'label' => 'Category Name',
-                        'name' => 'category_name',
-                        'type' => 'text',
-                        'instructions' => 'Enter the category name',
-                        'required' => 1,
-                    ),
-                    array(
-                        'key' => 'field_questions',
-                        'label' => 'Questions',
-                        'name' => 'questions',
-                        'type' => 'repeater',
-                        'instructions' => 'Add questions and answers',
-                        'required' => 0,
-                        'min' => 0,
-                        'max' => 0,
-                        'layout' => 'block',
-                        'button_label' => 'Add Question',
-                        'sub_fields' => array(
-                            array(
-                                'key' => 'field_question',
-                                'label' => 'Question',
-                                'name' => 'question',
-                                'type' => 'text',
-                                'instructions' => 'Enter the question',
-                                'required' => 1,
-                            ),
-                            array(
-                                'key' => 'field_answer',
-                                'label' => 'Answer',
-                                'name' => 'answer',
-                                'type' => 'wysiwyg',
-                                'instructions' => 'Enter the answer',
-                                'required' => 1,
-                            ),
-                        ),
-                    ),
-                ),
+                'key' => 'field_faq_question',
+                'label' => 'Question',
+                'name' => 'faq_question',
+                'type' => 'text',
+                'instructions' => 'Enter one question for this FAQ entry',
+                'required' => 1,
             ),
             array(
-                'key' => 'field_additional_information',
-                'label' => 'Additional Information',
-                'name' => 'additional_information',
+                'key' => 'field_faq_answer',
+                'label' => 'Answer',
+                'name' => 'faq_answer',
                 'type' => 'wysiwyg',
-                'instructions' => 'Enter additional information (optional)',
-                'required' => 0,
+                'instructions' => 'Enter the answer for this FAQ entry',
+                'required' => 1,
+                'toolbar' => 'basic',
+                'media_upload' => 0,
             ),
             array(
-                'key' => 'field_show_contact_info',
-                'label' => 'Show Contact Information',
-                'name' => 'show_contact_info',
-                'type' => 'true_false',
-                'instructions' => 'Display contact information section',
+                'key' => 'field_faq_category',
+                'label' => 'Category',
+                'name' => 'faq_category',
+                'type' => 'taxonomy',
+                'instructions' => 'Select FAQ category (optional)',
                 'required' => 0,
-                'default_value' => 0,
-                'ui' => 1,
+                'taxonomy' => 'faq_category',
+                'field_type' => 'select',
+                'allow_null' => 1,
+                'add_term' => 1,
+                'save_terms' => 1,
+                'load_terms' => 1,
+                'return_format' => 'id',
+                'multiple' => 0,
             ),
             array(
-                'key' => 'field_contact_information',
-                'label' => 'Contact Information',
-                'name' => 'contact_information',
-                'type' => 'wysiwyg',
-                'instructions' => 'Enter contact information',
+                'key' => 'field_faq_applicable_to',
+                'label' => 'Applicable To',
+                'name' => 'faq_applicable_to',
+                'type' => 'checkbox',
+                'instructions' => 'Select which post types this FAQ applies to',
                 'required' => 0,
-                'conditional_logic' => array(
-                    array(
-                        array(
-                            'field' => 'field_show_contact_info',
-                            'operator' => '==',
-                            'value' => 1,
-                        ),
-                    ),
+                'choices' => array(
+                    'trekking' => 'Trekking',
+                    'tours' => 'Tours',
+                    'general' => 'General (All)',
                 ),
+                'default_value' => array('general'),
+                'layout' => 'vertical',
+                'toggle' => 0,
+                'return_format' => 'value',
+            ),
+            array(
+                'key' => 'field_faq_order',
+                'label' => 'Display Order',
+                'name' => 'faq_order',
+                'type' => 'number',
+                'instructions' => 'Enter a number to control the display order (lower numbers appear first)',
+                'required' => 0,
+                'default_value' => 10,
+                'min' => 1,
+                'max' => 999,
+                'step' => 1,
             ),
         ),
         'location' => array(
@@ -856,6 +835,60 @@ function tznew_register_acf_fields() {
             'tags',
             'send-trackbacks',
         ),
+    ));
+    
+    // FAQ Selection Fields for Tours and Trekking
+    acf_add_local_field_group(array(
+        'key' => 'group_faq_selection',
+        'title' => 'FAQ Selection',
+        'fields' => array(
+            array(
+                'key' => 'field_selected_faqs',
+                'label' => 'Select FAQs',
+                'name' => 'selected_faqs',
+                'type' => 'post_object',
+                'instructions' => 'Select FAQs to display for this tour/trek',
+                'required' => 0,
+                'post_type' => array('faq'),
+                'taxonomy' => '',
+                'allow_null' => 1,
+                'multiple' => 1,
+                'return_format' => 'object',
+                'ui' => 1,
+            ),
+            array(
+                'key' => 'field_show_general_faqs',
+                'label' => 'Show General FAQs',
+                'name' => 'show_general_faqs',
+                'type' => 'true_false',
+                'instructions' => 'Also display general FAQs applicable to all tours/treks',
+                'required' => 0,
+                'default_value' => 1,
+                'ui' => 1,
+            ),
+        ),
+        'location' => array(
+            array(
+                array(
+                    'param' => 'post_type',
+                    'operator' => '==',
+                    'value' => 'tours',
+                ),
+            ),
+            array(
+                array(
+                    'param' => 'post_type',
+                    'operator' => '==',
+                    'value' => 'trekking',
+                ),
+            ),
+        ),
+        'menu_order' => 20,
+        'position' => 'side',
+        'style' => 'default',
+        'label_placement' => 'top',
+        'instruction_placement' => 'label',
+        'hide_on_screen' => array(),
     ));
     
     // Blog Fields
@@ -1120,3 +1153,9 @@ function tznew_add_schema_markup() {
     }
 }
 add_action('wp_head', 'tznew_add_schema_markup');
+
+// Include ACF Database Optimization module
+require_once get_template_directory() . '/inc/acf-database-optimization.php';
+
+// Include ACF Admin Interface module
+require_once get_template_directory() . '/inc/acf-admin-interface.php';

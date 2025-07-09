@@ -17,135 +17,102 @@
 			
 			// Display FAQ content
 			if (function_exists('get_field')) :
-				?>
-				<?php
-				// FAQ Categories
-			if (tznew_have_rows_safe('faq_categories')) : ?>
-				<div class="faq-categories space-y-8 mb-8">
-					<?php while (tznew_have_rows_safe('faq_categories')) : tznew_the_row_safe(); ?>
-						<div class="faq-category">
-							<?php if (tznew_get_sub_field_safe('category_name')) : ?>
-							<h2 class="text-2xl font-bold mb-4 pb-2 border-b border-gray-200"><?php echo esc_html(tznew_get_sub_field_safe('category_name')); ?></h2>
-							<?php endif; ?>
-							
-							<?php if (tznew_have_rows_safe('questions')) : ?>
-								<div class="faq-questions space-y-4">
-									<?php while (tznew_have_rows_safe('questions')) : tznew_the_row_safe(); ?>
-										<div class="faq-item bg-gray-50 rounded-lg overflow-hidden">
-											<div class="faq-question p-4 font-medium cursor-pointer flex justify-between items-center">
-												<span><?php echo esc_html(tznew_get_sub_field_safe('question')); ?></span>
-												<span class="dashicons dashicons-arrow-down-alt2"></span>
-											</div>
-											<div class="faq-answer p-4 pt-0 border-t border-gray-200 hidden">
-												<div class="prose max-w-none pt-4">
-													<?php echo wp_kses_post(tznew_get_sub_field_safe('answer')); ?>
-												</div>
-											</div>
-										</div>
-									<?php endwhile; ?>
+				$question = tznew_get_field_safe('faq_question');
+				$answer = tznew_get_field_safe('faq_answer');
+				$category = tznew_get_field_safe('faq_category');
+				
+				if ($question && $answer) :
+					?>
+					<div class="faq-single">
+						<?php if ($category) : ?>
+							<div class="faq-category mb-4">
+								<span class="inline-block bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
+									<?php echo esc_html(ucfirst(str_replace('_', ' ', $category))); ?>
+								</span>
+							</div>
+						<?php endif; ?>
+						
+						<div class="faq-item bg-gray-50 rounded-lg overflow-hidden mb-6">
+							<div class="faq-question p-6 font-medium cursor-pointer flex justify-between items-center border-b border-gray-200">
+								<h2 class="text-xl font-semibold text-gray-800 m-0"><?php echo esc_html($question); ?></h2>
+								<span class="dashicons dashicons-arrow-down-alt2 text-blue-600"></span>
+							</div>
+							<div class="faq-answer p-6 hidden">
+								<div class="prose max-w-none">
+									<?php echo wp_kses_post($answer); ?>
 								</div>
-							<?php endif; ?>
+							</div>
 						</div>
-					<?php endwhile; ?>
-				</div>
-			<?php endif; ?>
-				
-				<?php
-				// Additional Information
-			$additional_info = tznew_get_field_safe('additional_information');
-			if ($additional_info) : ?>
-				<div class="faq-additional-info mt-8 p-6 bg-blue-50 rounded-lg">
-					<h2 class="text-2xl font-bold mb-4"><?php esc_html_e('Additional Information', 'tznew'); ?></h2>
-					<div class="prose max-w-none">
-						<?php echo wp_kses_post($additional_info); ?>
 					</div>
-				</div>
-			<?php endif; ?>
-				
-				<?php
-				// Contact Information
-			$show_contact_info = tznew_get_field_safe('show_contact_info');
-			$contact_info = tznew_get_field_safe('contact_information');
-			if ($show_contact_info && $contact_info) : ?>
-				<div class="faq-contact-info mt-8 p-6 bg-gray-50 rounded-lg">
-					<h2 class="text-2xl font-bold mb-4"><?php esc_html_e('Still Have Questions?', 'tznew'); ?></h2>
-					<div class="prose max-w-none">
-						<?php echo wp_kses_post($contact_info); ?>
-					</div>
-				</div>
-			<?php endif; ?>
-				
-				<script>
-				// FAQ Toggle Script
-				document.addEventListener('DOMContentLoaded', function() {
-					const faqQuestions = document.querySelectorAll('.faq-question');
-					faqQuestions.forEach(question => {
-						question.addEventListener('click', function() {
-							const answer = this.nextElementSibling;
-							const icon = this.querySelector('.dashicons');
-							
-							// Toggle answer visibility
-							answer.classList.toggle('hidden');
-							
-							// Toggle icon
-							if (answer.classList.contains('hidden')) {
-								icon.classList.remove('dashicons-arrow-up-alt2');
-								icon.classList.add('dashicons-arrow-down-alt2');
-							} else {
-								icon.classList.remove('dashicons-arrow-down-alt2');
-								icon.classList.add('dashicons-arrow-up-alt2');
-							}
-						});
+					
+					<script>
+					// FAQ Toggle Script
+					document.addEventListener('DOMContentLoaded', function() {
+						const faqQuestion = document.querySelector('.faq-question');
+						if (faqQuestion) {
+							faqQuestion.addEventListener('click', function() {
+								const answer = this.nextElementSibling;
+								const icon = this.querySelector('.dashicons');
+								
+								// Toggle answer visibility
+								answer.classList.toggle('hidden');
+								
+								// Toggle icon
+								if (answer.classList.contains('hidden')) {
+									icon.classList.remove('dashicons-arrow-up-alt2');
+									icon.classList.add('dashicons-arrow-down-alt2');
+								} else {
+									icon.classList.remove('dashicons-arrow-down-alt2');
+									icon.classList.add('dashicons-arrow-up-alt2');
+								}
+							});
+						}
 					});
-				});
-				</script>
+					</script>
+					<?php
+				else :
+					?>
+					<div class="faq-empty p-6 bg-yellow-50 rounded-lg">
+						<p class="text-yellow-800"><?php esc_html_e('No FAQ content available.', 'tznew'); ?></p>
+					</div>
+					<?php
+				endif;
 				
-			<?php endif; // End if function_exists('get_field') ?>
+			endif; // End if function_exists('get_field')
 			
 		else :
 			// Archive view
 			the_title( '<h2 class="entry-title text-xl font-bold mb-2"><a href="' . esc_url( get_permalink() ) . '" rel="bookmark">', '</a></h2>' );
 			
 			// Display FAQ excerpt
-			if (function_exists('get_field') && tznew_have_rows_safe('faq_categories')) :
-				// Get the first category and first question as preview
-				$first_category = null;
-				$first_question = null;
-				$first_answer = null;
+			if (function_exists('get_field')) :
+				$question = tznew_get_field_safe('faq_question');
+				$answer = tznew_get_field_safe('faq_answer');
+				$category = tznew_get_field_safe('faq_category');
 				
-				while (tznew_have_rows_safe('faq_categories')) {
-					tznew_the_row_safe();
-					$first_category = tznew_get_sub_field_safe('category_name');
-					
-					if (tznew_have_rows_safe('questions')) {
-						while (tznew_have_rows_safe('questions')) {
-							tznew_the_row_safe();
-							$first_question = tznew_get_sub_field_safe('question');
-							$first_answer = tznew_get_sub_field_safe('answer');
-							break 2; // Break out of both loops
-						}
-					}
-				}
-				
-				if ($first_category) :
+				if ($category) :
 					?>
 					<div class="faq-category-preview text-sm text-gray-600 mb-2">
-						<?php echo esc_html($first_category); ?>
+						<span class="inline-block bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
+							<?php echo esc_html(ucfirst(str_replace('_', ' ', $category))); ?>
+						</span>
 					</div>
 					<?php
 				endif;
 				
-				if ($first_question && $first_answer) :
+				if ($question && $answer) :
 					?>
 					<div class="faq-preview mb-4">
-						<div class="faq-question-preview font-medium mb-2">
-							<?php echo esc_html($first_question); ?>
+						<div class="faq-question-preview font-medium mb-2 text-gray-800">
+							<?php echo esc_html($question); ?>
 						</div>
-						<div class="faq-answer-preview">
-							<?php echo wp_trim_words(wp_strip_all_tags($first_answer), 20, '...'); ?>
+						<div class="faq-answer-preview text-gray-600">
+							<?php echo wp_trim_words(wp_strip_all_tags($answer), 20, '...'); ?>
 						</div>
 					</div>
 					<?php
+				else :
+					the_excerpt();
 				endif;
 			else :
 				the_excerpt();
@@ -154,7 +121,7 @@
 			
 			<div class="mt-4">
 				<a href="<?php echo esc_url(get_permalink()); ?>" class="inline-block bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded transition duration-300">
-					<?php esc_html_e('View All FAQs', 'tznew'); ?>
+					<?php esc_html_e('Read FAQ', 'tznew'); ?>
 				</a>
 			</div>
 			
