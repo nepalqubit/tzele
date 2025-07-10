@@ -173,7 +173,7 @@ function tznew_post_meta($post_id) {
     
     // Date
     $output .= '<span class="post-date">';
-    $output .= '<i class="fas fa-calendar-alt"></i> ';
+    $output .= '<i class="fas fa-calendar-days"></i> ';
     $output .= get_the_date('', $post_id);
     $output .= '</span>';
     
@@ -748,7 +748,7 @@ function tznew_posted_on() {
         '<a href="' . esc_url(get_permalink()) . '" rel="bookmark">' . $time_string . '</a>'
     );
 
-    echo '<span class="posted-on"><i class="fas fa-calendar-alt mr-1"></i> ' . $posted_on . '</span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+    echo '<span class="posted-on"><i class="fas fa-calendar-days mr-1"></i> ' . $posted_on . '</span>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 }
 
 /**

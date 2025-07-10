@@ -52,7 +52,7 @@
 					<h3 class="text-lg font-bold mb-6 text-white">Contact Info</h3>
 					<div class="space-y-4 text-gray-300">
 						<div class="flex items-start space-x-3 hover:text-white transition-colors duration-300">
-							<i class="fas fa-map-marker-alt text-blue-400 mt-1"></i>
+							<i class="fas fa-location-dot text-blue-400 mt-1"></i>
 							<span>123 Adventure Street, Kathmandu, Nepal</span>
 						</div>
 						<div class="flex items-center space-x-3 hover:text-white transition-colors duration-300">

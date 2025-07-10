@@ -158,7 +158,7 @@ get_header();
 										<?php $region = tznew_get_field_safe('region', get_the_ID()); ?>
 										<?php if (!empty($region)) : ?>
 											<span class="flex items-center">
-												<i class="fas fa-map-marker-alt mr-1 text-green-600"></i>
+												<i class="fas fa-location-dot mr-1 text-green-600"></i>
 												<?php echo esc_html($region); ?>
 											</span>
 										<?php endif; ?>

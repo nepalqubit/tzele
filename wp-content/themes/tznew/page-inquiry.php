@@ -84,7 +84,7 @@ get_header();
                     
                     <div class="bg-white p-6 rounded-xl shadow-lg">
                         <h3 class="text-xl font-semibold text-gray-800 mb-3 flex items-center">
-                            <i class="fas fa-calendar-alt text-green-600 mr-3"></i>
+                            <i class="fas fa-calendar-days text-green-600 mr-3"></i>
                             <?php esc_html_e('When is the best time to trek?', 'tznew'); ?>
                         </h3>
                         <p class="text-gray-600"><?php esc_html_e('The best seasons are pre-monsoon (March-May) and post-monsoon (September-November) for clear mountain views and stable weather.', 'tznew'); ?></p>
@@ -167,7 +167,7 @@ get_header();
                     
                     <div class="bg-white p-6 rounded-xl shadow-lg text-center hover:shadow-xl transition-shadow duration-300">
                         <div class="w-16 h-16 mx-auto mb-4 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center">
-                            <i class="fas fa-map-marker-alt text-2xl"></i>
+                            <i class="fas fa-location-dot text-2xl"></i>
                         </div>
                         <h3 class="text-lg font-semibold text-gray-800 mb-2"><?php esc_html_e('Visit Office', 'tznew'); ?></h3>
                         <p class="text-gray-600 text-sm mb-3"><?php esc_html_e('Meet us in person', 'tznew'); ?></p>

@@ -36,7 +36,7 @@ get_header();
 							foreach ($regions as $region) :
 						?>
 							<span class="bg-blue-600/80 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium">
-								<i class="fas fa-map-marker-alt mr-1"></i>
+								<i class="fas fa-location-dot mr-1"></i>
 								<?php echo esc_html($region->name); ?>
 							</span>
 						<?php
@@ -108,7 +108,7 @@ get_header();
 						<?php if ($best_season) : ?>
 							<div class="text-center group">
 								<div class="w-16 h-16 mx-auto mb-3 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center text-white text-2xl group-hover:scale-110 transition-transform duration-300">
-									<i class="fas fa-calendar-alt"></i>
+									<i class="fas fa-calendar-days"></i>
 								</div>
 								<h3 class="font-semibold text-gray-800 mb-1"><?php esc_html_e('Best Season', 'tznew'); ?></h3>
 								<p class="text-lg font-bold text-purple-600"><?php echo esc_html($best_season); ?></p>
@@ -194,7 +194,7 @@ get_header();
 										<?php $highlight = tznew_get_sub_field_safe('highlight'); ?>
 										<?php if ($highlight) : ?>
 											<li class="flex items-start text-gray-700">
-												<i class="fas fa-check-circle text-green-500 mr-2 mt-1 flex-shrink-0"></i>
+												<i class="fas fa-circle-check text-green-500 mr-2 mt-1 flex-shrink-0"></i>
 												<span class="text-sm"><?php echo wp_kses_post(is_string($highlight) ? $highlight : ''); ?></span>
 											</li>
 										<?php endif; ?>

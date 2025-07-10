@@ -69,7 +69,7 @@ get_header();
 					<!-- Region Filter -->
 					<div>
 						<label for="region" class="block text-sm font-medium text-gray-700 mb-2">
-							<i class="fas fa-map-marker-alt mr-1"></i>
+							<i class="fas fa-location-dot mr-1"></i>
 							<?php esc_html_e('Region', 'tznew'); ?>
 						</label>
 						<select name="region" id="region" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300">
@@ -243,7 +243,7 @@ get_header();
 							?>
 								<div class="absolute top-4 left-4">
 									<span class="bg-green-500/90 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium">
-										<i class="fas fa-map-marker-alt mr-1"></i>
+										<i class="fas fa-location-dot mr-1"></i>
 										<?php echo esc_html($regions[0]->name); ?>
 									</span>
 								</div>

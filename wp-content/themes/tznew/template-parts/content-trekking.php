@@ -74,7 +74,7 @@ if (!defined('ABSPATH')) {
                     <?php if ($best_season) : ?>
                         <div class="trek-meta-item flex flex-col items-center justify-center p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300">
                             <div class="text-purple-600 text-2xl mb-2">
-                                <i class="fas fa-calendar-alt" aria-hidden="true"></i>
+                                <i class="fas fa-calendar-days" aria-hidden="true"></i>
                             </div>
                             <span class="block text-sm text-gray-600 mb-1 font-medium"><?php esc_html_e('Best Season', 'tznew'); ?></span>
                             <span class="font-bold text-lg text-gray-800"><?php echo esc_html($best_season); ?></span>
@@ -123,7 +123,7 @@ if (!defined('ABSPATH')) {
                             <?php $highlight = tznew_get_sub_field_safe('highlight'); ?>
                             <?php if ($highlight) : ?>
                                 <li class="flex items-start text-gray-700">
-                                    <i class="fas fa-check-circle text-green-500 mr-3 mt-1 flex-shrink-0" aria-hidden="true"></i>
+                                    <i class="fas fa-circle-check text-green-500 mr-3 mt-1 flex-shrink-0" aria-hidden="true"></i>
                                     <span class="text-lg leading-relaxed"><?php echo wp_kses_post(is_string($highlight) ? $highlight : ''); ?></span>
                                 </li>
                             <?php endif; ?>
@@ -310,13 +310,67 @@ if (!defined('ABSPATH')) {
                                 // Create route line coordinates
                                 const routeLineCoords = routeCoordinates.map(coord => [coord.lat, coord.lng]);
                                 
-                                // Add route line
-                                const routeLine = L.polyline(routeLineCoords, {
-                                    color: '#059669',
-                                    weight: 4,
-                                    opacity: 0.8,
-                                    smoothFactor: 1
-                                }).addTo(map);
+                                // Add route line segments with transportation icons
+                                const routeSegments = [];
+                                for (let i = 0; i < routeLineCoords.length - 1; i++) {
+                                    const startCoord = routeLineCoords[i];
+                                    const endCoord = routeLineCoords[i + 1];
+                                    const segmentCoords = [startCoord, endCoord];
+                                    
+                                    // Get transportation method for this segment
+                                    const nextDayTransport = routeCoordinates[i + 1].transportation;
+                                    
+                                    // Create segment line
+                                    const segment = L.polyline(segmentCoords, {
+                                        color: '#059669',
+                                        weight: 4,
+                                        opacity: 0.8,
+                                        smoothFactor: 1
+                                    }).addTo(map);
+                                    
+                                    routeSegments.push(segment);
+                                    
+                                    // Add transportation icon on the line segment
+                                    if (nextDayTransport) {
+                                        const transportIcons = {
+                                            'walking': 'fa-walking',
+                                            'bus': 'fa-bus',
+                                            'car': 'fa-car',
+                                            'jeep': 'fa-truck',
+                                            'van': 'fa-shuttle-van',
+                                            'motorbike': 'fa-motorcycle',
+                                            'flight': 'fa-plane',
+                                            'helicopter': 'fa-helicopter',
+                                            'rest_day': 'fa-bed',
+                                            'acclimatization': 'fa-mountain'
+                                        };
+                                        
+                                        const transportIcon = transportIcons[nextDayTransport] || 'fa-route';
+                                        
+                                        // Calculate midpoint of the segment
+                                        const midLat = (startCoord[0] + endCoord[0]) / 2;
+                                        const midLng = (startCoord[1] + endCoord[1]) / 2;
+                                        
+                                        // Create transportation icon marker
+                                        const transportMarker = L.divIcon({
+                                            html: `<div style="background-color: #ffffff; border: 2px solid #059669; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"><i class="fas ${transportIcon}" style="color: #059669; font-size: 12px;"></i></div>`,
+                                            className: 'transport-icon-marker',
+                                            iconSize: [24, 24],
+                                            iconAnchor: [12, 12]
+                                        });
+                                        
+                                        L.marker([midLat, midLng], { icon: transportMarker })
+                                            .addTo(map)
+                                            .bindTooltip(`Transportation: ${nextDayTransport.charAt(0).toUpperCase() + nextDayTransport.slice(1)}`, {
+                                                permanent: false,
+                                                direction: 'top',
+                                                className: 'transport-tooltip'
+                                            });
+                                    }
+                                }
+                                
+                                // Create a feature group for fitting bounds
+                                const allSegments = L.featureGroup(routeSegments);
                                 
                                 // Add markers for each day
                                 routeCoordinates.forEach((coord, index) => {
@@ -324,7 +378,7 @@ if (!defined('ABSPATH')) {
                                     const isEnd = index === routeCoordinates.length - 1;
                                     
                                     let markerColor = '#3B82F6'; // Default blue
-                                    let iconClass = 'fa-map-marker-alt';
+                                    let iconClass = 'fa-location-dot';
                                     
                                     if (isStart) {
                                         markerColor = '#10B981'; // Green for start
@@ -360,7 +414,7 @@ if (!defined('ABSPATH')) {
                                     const popupContent = `
                                         <div class="map-popup">
                                             <h4 style="margin: 0 0 8px 0; font-weight: bold; color: #1F2937;">Day ${coord.day}: ${coord.title || 'Untitled'}</h4>
-                                            ${coord.place_name ? `<p style="margin: 0 0 4px 0; color: #6B7280;"><i class="fas fa-map-marker-alt" style="margin-right: 4px;"></i>${coord.place_name}</p>` : ''}
+                                            ${coord.place_name ? `<p style="margin: 0 0 4px 0; color: #6B7280;"><i class="fas fa-location-dot" style="margin-right: 4px;"></i>${coord.place_name}</p>` : ''}
                                             ${coord.transportation ? `<p style="margin: 0 0 4px 0; color: #6366F1;"><i class="fas ${transportIcon}" style="margin-right: 4px;"></i>Transportation: ${coord.transportation.charAt(0).toUpperCase() + coord.transportation.slice(1)}</p>` : ''}
                                             ${coord.altitude ? `<p style="margin: 0 0 4px 0; color: #6B7280;"><i class="fas fa-mountain" style="margin-right: 4px;"></i>Altitude: ${Number(coord.altitude).toLocaleString()}m</p>` : ''}
                                             <p style="margin: 0; color: #6B7280; font-size: 12px;"><i class="fas fa-crosshairs" style="margin-right: 4px;"></i>${coord.lat.toFixed(6)}, ${coord.lng.toFixed(6)}</p>
@@ -372,8 +426,10 @@ if (!defined('ABSPATH')) {
                                         .bindPopup(popupContent);
                                 });
                                 
-                                // Fit map to show all markers
-                                map.fitBounds(routeLine.getBounds(), { padding: [20, 20] });
+                                // Fit map to show all segments and markers
+                                if (allSegments.getLayers().length > 0) {
+                                    map.fitBounds(allSegments.getBounds(), { padding: [20, 20] });
+                                }
                                 
                                 // Add map controls
                                 L.control.scale().addTo(map);
@@ -422,7 +478,7 @@ if (!defined('ABSPATH')) {
                                                 </h3>
                                                 <?php if ($place_name) : ?>
                                                     <p class="text-sm text-gray-600 mt-1">
-                                                        <i class="fas fa-map-marker-alt mr-1" aria-hidden="true"></i>
+                                                        <i class="fas fa-location-dot mr-1" aria-hidden="true"></i>
                                                         <?php echo esc_html($place_name); ?>
                                                         <?php if ($altitude) : ?>
                                                             <span class="ml-2 text-blue-600 font-medium"><?php echo esc_html(number_format($altitude)); ?>m</span>
@@ -535,7 +591,7 @@ if (!defined('ABSPATH')) {
                                                     <?php echo esc_html($coordinates['latitude']); ?>, <?php echo esc_html($coordinates['longitude']); ?>
                                                     <a href="https://www.google.com/maps?q=<?php echo esc_attr($coordinates['latitude']); ?>,<?php echo esc_attr($coordinates['longitude']); ?>" 
                                                        target="_blank" class="ml-2 text-purple-600 hover:text-purple-800">
-                                                        <i class="fas fa-external-link-alt" aria-hidden="true"></i>
+                                                        <i class="fas fa-up-right-from-square" aria-hidden="true"></i>
                                                     </a>
                                                 </div>
                                             </div>
@@ -582,7 +638,7 @@ if (!defined('ABSPATH')) {
                                                                class="block bg-gray-100 p-4 rounded-lg hover:bg-gray-200 transition-colors duration-300">
                                                                 <i class="fas fa-play-circle text-red-600 mr-2" aria-hidden="true"></i>
                                                                 <?php esc_html_e('Watch Video', 'tznew'); ?>
-                                                                <i class="fas fa-external-link-alt ml-2 text-gray-500" aria-hidden="true"></i>
+                                                                <i class="fas fa-up-right-from-square ml-2 text-gray-500" aria-hidden="true"></i>
                                                             </a>
                                                         </div>
                                                     <?php endif; ?>
@@ -642,7 +698,7 @@ if (!defined('ABSPATH')) {
                     <?php if ($includes) : ?>
                         <div class="trek-includes bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-xl shadow-sm border border-green-100 hover:shadow-md transition-shadow duration-300">
                             <h2 class="text-2xl font-bold mb-4 text-green-700 border-b border-green-200 pb-3 flex items-center">
-                                <i class="fas fa-check-circle mr-2 text-green-600" aria-hidden="true"></i>
+                                <i class="fas fa-circle-check mr-2 text-green-600" aria-hidden="true"></i>
                                 <?php esc_html_e('Includes', 'tznew'); ?>
                             </h2>
                             <div class="list-content text-gray-700 leading-relaxed">
@@ -654,7 +710,7 @@ if (!defined('ABSPATH')) {
                     <?php if ($excludes) : ?>
                         <div class="trek-excludes bg-gradient-to-br from-red-50 to-pink-50 p-6 rounded-xl shadow-sm border border-red-100 hover:shadow-md transition-shadow duration-300">
                             <h2 class="text-2xl font-bold mb-4 text-red-700 border-b border-red-200 pb-3 flex items-center">
-                                <i class="fas fa-times-circle mr-2 text-red-600" aria-hidden="true"></i>
+                                <i class="fas fa-circle-xmark mr-2 text-red-600" aria-hidden="true"></i>
                                 <?php esc_html_e('Excludes', 'tznew'); ?>
                             </h2>
                             <div class="list-content text-gray-700 leading-relaxed">
@@ -808,7 +864,7 @@ if (!defined('ABSPATH')) {
                                     <a href="https://www.google.com/maps?q=<?php echo esc_attr($coordinates['latitude']); ?>,<?php echo esc_attr($coordinates['longitude']); ?>" 
                                        target="_blank" rel="noopener noreferrer"
                                        class="inline-flex items-center mt-2 text-teal-600 hover:text-teal-800 transition-colors duration-300">
-                                        <i class="fas fa-external-link-alt mr-1" aria-hidden="true"></i>
+                                        <i class="fas fa-up-right-from-square mr-1" aria-hidden="true"></i>
                                         <?php esc_html_e('View on Google Maps', 'tznew'); ?>
                                     </a>
                                 </div>
@@ -917,7 +973,7 @@ if (!defined('ABSPATH')) {
                     
                     <?php if ($regions && !is_wp_error($regions) && !empty($regions)) : ?>
                         <div class="trek-meta-item flex items-center bg-green-50 px-3 py-2 rounded-full border border-green-100 hover:bg-green-100 transition-colors duration-300">
-                            <i class="fas fa-map-marker-alt text-green-600 mr-2" aria-hidden="true"></i>
+                            <i class="fas fa-location-dot text-green-600 mr-2" aria-hidden="true"></i>
                             <span class="text-gray-700 font-medium"><?php echo esc_html($regions[0]->name); ?></span>
                         </div>
                     <?php endif; ?>

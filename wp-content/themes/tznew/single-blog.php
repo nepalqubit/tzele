@@ -42,7 +42,7 @@ get_header();
 					<!-- Post Meta -->
 					<div class="flex flex-wrap items-center gap-4 text-purple-100">
 						<span class="flex items-center">
-							<i class="fas fa-calendar-alt mr-2"></i>
+							<i class="fas fa-calendar-days mr-2"></i>
 							<?php echo get_the_date(); ?>
 						</span>
 						<span class="flex items-center">
@@ -172,7 +172,7 @@ get_header();
 												<?php echo wp_trim_words(get_the_excerpt($related_post->ID), 15); ?>
 											</p>
 											<div class="text-xs text-gray-500">
-												<i class="fas fa-calendar-alt mr-1"></i>
+												<i class="fas fa-calendar-days mr-1"></i>
 												<?php echo get_the_date('', $related_post->ID); ?>
 											</div>
 										</div>
@@ -229,7 +229,7 @@ get_header();
 												</a>
 											</h4>
 											<p class="text-xs text-gray-500 mt-1">
-												<i class="fas fa-calendar-alt mr-1"></i>
+												<i class="fas fa-calendar-days mr-1"></i>
 												<?php echo get_the_date('M j, Y', $recent_post->ID); ?>
 											</p>
 										</div>

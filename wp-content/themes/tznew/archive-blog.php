@@ -87,7 +87,7 @@ get_header();
 										<?php esc_html_e('Blog', 'tznew'); ?>
 									</span>
 									<span class="text-gray-500 text-xs">
-										<i class="fas fa-calendar-alt mr-1"></i>
+										<i class="fas fa-calendar-days mr-1"></i>
 										<?php echo get_the_date(); ?>
 									</span>
 								</div>

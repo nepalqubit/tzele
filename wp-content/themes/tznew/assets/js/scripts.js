@@ -863,7 +863,7 @@
      function showFormMessage($form, message, type) {
          const $messagesDiv = $form.find('.form-messages');
          const alertClass = type === 'success' ? 'bg-green-100 border-green-400 text-green-700' : 'bg-red-100 border-red-400 text-red-700';
-         const iconClass = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+         const iconClass = type === 'success' ? 'fas fa-circle-check' : 'fas fa-exclamation-circle';
          
          const messageHtml = `
              <div class="alert ${alertClass} border px-4 py-3 rounded-lg flex items-center space-x-2">
