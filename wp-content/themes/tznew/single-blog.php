@@ -284,6 +284,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	}
 });
+
+// Preloader is now handled universally in header.php
 </script>
 
 <?php

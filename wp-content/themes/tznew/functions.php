@@ -1061,3 +1061,14 @@ function tznew_init() {
     }
 }
 add_action('init', 'tznew_init');
+
+/**
+ * Calculate reading time for content
+ */
+if (!function_exists('tznew_get_reading_time')) {
+    function tznew_get_reading_time($content) {
+        $word_count = str_word_count(strip_tags($content));
+        $reading_time = ceil($word_count / 200); // Average reading speed: 200 words per minute
+        return max(1, $reading_time);
+    }
+}

@@ -26,6 +26,35 @@
     <div class="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
 </div>
 
+<script>
+// Universal preloader functionality - works on all pages
+(function() {
+    function hidePreloader() {
+        const preloader = document.getElementById('preloader');
+        if (preloader) {
+            preloader.style.opacity = '0';
+            preloader.style.transition = 'opacity 0.5s ease-out';
+            setTimeout(function() {
+                preloader.style.display = 'none';
+            }, 500);
+        }
+    }
+    
+    // Hide on DOM ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', hidePreloader);
+    } else {
+        hidePreloader();
+    }
+    
+    // Also hide on window load
+    window.addEventListener('load', hidePreloader);
+    
+    // Fallback: Hide after 2 seconds maximum
+    setTimeout(hidePreloader, 2000);
+})();
+</script>
+
 <?php
 // Check if Elementor Theme Builder header exists
 if ( function_exists( 'tznew_elementor_location_exists' ) && tznew_elementor_location_exists( 'header' ) ) {
