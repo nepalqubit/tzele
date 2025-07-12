@@ -13,7 +13,15 @@
 
 	</div><!-- #content -->
 
-	<footer id="colophon" class="site-footer bg-gradient-to-b from-gray-900 to-black text-white relative overflow-hidden">
+<?php
+// Check if Elementor Theme Builder footer exists
+if ( function_exists( 'tznew_elementor_location_exists' ) && tznew_elementor_location_exists( 'footer' ) ) {
+    // Use Elementor Theme Builder footer
+    tznew_elementor_do_location( 'footer' );
+} else {
+    // Fallback to default footer
+    ?>
+    <footer id="colophon" class="site-footer bg-gradient-to-b from-gray-900 to-black text-white relative overflow-hidden">
 		<!-- Background decoration -->
 		<div class="absolute inset-0 opacity-10">
 			<div class="absolute top-10 left-10 w-20 h-20 bg-blue-500 rounded-full animate-pulse"></div>
@@ -144,6 +152,9 @@
 			<i class="fas fa-arrow-up"></i>
 		</div>
 	</footer><!-- #colophon -->
+    <?php
+}
+?>
 </div><!-- #page -->
 
 <?php wp_footer(); ?>

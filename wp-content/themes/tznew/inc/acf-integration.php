@@ -392,7 +392,6 @@ function tznew_register_acf_fields() {
         'label_placement' => 'top',
         'instruction_placement' => 'label',
         'hide_on_screen' => array(
-            'the_content',
             'excerpt',
             'discussion',
             'comments',
@@ -723,7 +722,6 @@ function tznew_register_acf_fields() {
         'label_placement' => 'top',
         'instruction_placement' => 'label',
         'hide_on_screen' => array(
-            'the_content',
             'excerpt',
             'discussion',
             'comments',
@@ -822,7 +820,6 @@ function tznew_register_acf_fields() {
         'label_placement' => 'top',
         'instruction_placement' => 'label',
         'hide_on_screen' => array(
-            'the_content',
             'excerpt',
             'discussion',
             'comments',
@@ -944,7 +941,6 @@ function tznew_register_acf_fields() {
         'label_placement' => 'top',
         'instruction_placement' => 'label',
         'hide_on_screen' => array(
-            'the_content',
             'excerpt',
             'discussion',
             'comments',

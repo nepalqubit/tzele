@@ -228,8 +228,11 @@ add_action('admin_init', 'tznew_check_acf_dependency');
  */
 require_once TZNEW_INC_DIR . '/post-types.php';
 require_once TZNEW_INC_DIR . '/acf-integration.php';
+require_once TZNEW_INC_DIR . '/theme-settings.php';
 require_once TZNEW_INC_DIR . '/theme-functions.php';
 require_once TZNEW_INC_DIR . '/rest-api.php';
+require_once TZNEW_INC_DIR . '/customizer.php';
+require_once TZNEW_INC_DIR . '/theme-settings-notice.php';
 
 // Include WooCommerce support if WooCommerce is active
 if (class_exists('WooCommerce')) {
@@ -239,6 +242,7 @@ if (class_exists('WooCommerce')) {
 // Include Elementor support if Elementor is active
 if (defined('ELEMENTOR_VERSION')) {
     require_once TZNEW_INC_DIR . '/elementor.php';
+    require_once TZNEW_THEME_DIR . '/elementor-activation-notice.php';
 }
 
 /**

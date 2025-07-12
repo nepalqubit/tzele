@@ -10,83 +10,84 @@
  */
 
 ?>
-<!doctype html>
+<!DOCTYPE html>
 <html <?php language_attributes(); ?>>
 <head>
-	<meta charset="<?php bloginfo( 'charset' ); ?>">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="profile" href="https://gmpg.org/xfn/11">
-
-	<?php wp_head(); ?>
+    <meta charset="<?php bloginfo( 'charset' ); ?>">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <?php wp_head(); ?>
 </head>
 
 <body <?php body_class(); ?>>
 <?php wp_body_open(); ?>
 
 <!-- Preloader -->
-<div class="preloader fixed inset-0 bg-white z-50 flex items-center justify-center">
-	<div class="preloader-content text-center">
-		<div class="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-		<p class="text-gray-600 animate-pulse">Loading...</p>
-	</div>
+<div id="preloader" class="fixed inset-0 bg-white z-50 flex items-center justify-center">
+    <div class="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
 </div>
 
-<div id="page" class="site">
-	<a class="skip-link screen-reader-text" href="#primary"><?php esc_html_e( 'Skip to content', 'tznew' ); ?></a>
+<?php
+// Check if Elementor Theme Builder header exists
+if ( function_exists( 'tznew_elementor_location_exists' ) && tznew_elementor_location_exists( 'header' ) ) {
+    // Use Elementor Theme Builder header
+    tznew_elementor_do_location( 'header' );
+} else {
+    // Fallback to default header
+    ?>
+    <header class="bg-white shadow-lg sticky top-0 z-40">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between py-4">
+                <!-- Site Branding -->
+                <div class="flex items-center">
+                    <?php if ( has_custom_logo() ) : ?>
+                        <?php the_custom_logo(); ?>
+                    <?php else : ?>
+                        <h1 class="text-2xl font-bold text-gray-800">
+                            <a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="hover:text-blue-600 transition-colors">
+                                <?php bloginfo( 'name' ); ?>
+                            </a>
+                        </h1>
+                    <?php endif; ?>
+                </div>
 
-	<header id="masthead" class="site-header bg-white/95 backdrop-blur-md shadow-lg fixed w-full top-0 z-40 transition-all duration-300">
-		<div class="container mx-auto px-4 py-4">
-			<div class="flex items-center justify-between">
-				<div class="site-branding flex items-center animate-fade-in-left">
-					<?php
-					if ( has_custom_logo() ) :
-						the_custom_logo();
-					else :
-						if ( is_front_page() && is_home() ) :
-							?>
-							<h1 class="site-title text-2xl lg:text-3xl font-bold text-blue-800 hover:text-blue-600 transition-colors">
-								<a href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home"><?php bloginfo( 'name' ); ?></a>
-							</h1>
-							<?php
-					else :
-							?>
-							<p class="site-title text-2xl lg:text-3xl font-bold text-blue-800 hover:text-blue-600 transition-colors">
-								<a href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home"><?php bloginfo( 'name' ); ?></a>
-							</p>
-							<?php
-					endif;
-					endif;
-					?>
-				</div><!-- .site-branding -->
+                <!-- Main Navigation -->
+                <nav class="hidden lg:block">
+                    <?php
+                    wp_nav_menu( array(
+                        'theme_location' => 'primary',
+                        'menu_class'     => 'flex space-x-8',
+                        'container'      => false,
+                        'fallback_cb'    => false,
+                    ) );
+                    ?>
+                </nav>
 
-				<nav id="site-navigation" class="main-navigation animate-fade-in-right">
-					<button class="menu-toggle lg:hidden flex flex-col gap-1 p-2 rounded-lg hover:bg-gray-100 transition-colors" aria-controls="primary-menu" aria-expanded="false" aria-label="Toggle Menu">
-						<span class="w-6 h-0.5 bg-gray-700 transition-all duration-300"></span>
-						<span class="w-6 h-0.5 bg-gray-700 transition-all duration-300"></span>
-						<span class="w-6 h-0.5 bg-gray-700 transition-all duration-300"></span>
-					</button>
-					<?php
-					wp_nav_menu(
-						array(
-							'theme_location' => 'primary',
-							'menu_id'        => 'primary-menu',
-							'container_class' => 'primary-menu-container hidden lg:block',
-							'menu_class'     => 'primary-menu flex items-center space-x-8',
-							'fallback_cb'    => false,
-						)
-					);
-					?>
-				</nav><!-- #site-navigation -->
-			</div>
-		</div>
-	</header><!-- #masthead -->
+                <!-- Mobile Menu Toggle -->
+                <button id="mobile-menu-toggle" class="lg:hidden p-2 rounded-md hover:bg-gray-100">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
 
-	<?php if (!is_front_page()): ?>
-	<div class="breadcrumbs-container bg-gray-100 py-2">
-		<div class="container mx-auto px-4">
-			<?php tznew_breadcrumbs(); ?>
-		</div>
-	</div>
-	<?php endif; ?>
+            <!-- Mobile Navigation -->
+            <nav id="mobile-menu" class="lg:hidden hidden pb-4">
+                <?php
+                wp_nav_menu( array(
+                    'theme_location' => 'primary',
+                    'menu_class'     => 'space-y-2',
+                    'container'      => false,
+                    'fallback_cb'    => false,
+                ) );
+                ?>
+            </nav>
+        </div>
+    </header>
+    <?php
+}
+?>
+
+<!-- Breadcrumbs Container -->
+<div id="breadcrumbs-container"></div>
 
 	<div id="content" class="site-content pt-20">

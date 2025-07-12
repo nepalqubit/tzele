@@ -31,13 +31,315 @@
         
     });
     
-    // Window load
-    $(window).on('load', function() {
+    /**
+     * Initialize mobile menu functionality
+     */
+    function initMobileMenu() {
+        const $mobileMenuToggle = $('#mobile-menu-toggle');
+        const $mobileMenu = $('#mobile-menu');
+        const $body = $('body');
+        
+        if ($mobileMenuToggle.length && $mobileMenu.length) {
+            // Toggle mobile menu
+            $mobileMenuToggle.on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const isOpen = $mobileMenu.hasClass('active');
+                
+                if (isOpen) {
+                    closeMobileMenu();
+                } else {
+                    openMobileMenu();
+                }
+            });
+            
+            // Close menu when clicking outside
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('#mobile-menu, #mobile-menu-toggle').length) {
+                    closeMobileMenu();
+                }
+            });
+            
+            // Close menu on escape key
+            $(document).on('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeMobileMenu();
+                }
+            });
+            
+            // Close menu when clicking on menu links
+            $mobileMenu.find('a').on('click', function() {
+                closeMobileMenu();
+            });
+            
+            // Handle window resize
+            $(window).on('resize', debounce(function() {
+                if ($(window).width() >= 1024) { // lg breakpoint
+                    closeMobileMenu();
+                }
+            }, 250));
+        }
+        
+        function openMobileMenu() {
+            $mobileMenu.addClass('active');
+            $mobileMenuToggle.addClass('active');
+            $body.addClass('mobile-menu-open');
+            
+            // Update aria attributes
+            $mobileMenuToggle.attr('aria-expanded', 'true');
+            $mobileMenu.attr('aria-hidden', 'false');
+            
+            // Focus management
+            $mobileMenu.find('a:first').focus();
+        }
+        
+        function closeMobileMenu() {
+            $mobileMenu.removeClass('active');
+            $mobileMenuToggle.removeClass('active');
+            $body.removeClass('mobile-menu-open');
+            
+            // Update aria attributes
+            $mobileMenuToggle.attr('aria-expanded', 'false');
+            $mobileMenu.attr('aria-hidden', 'true');
+        }
+    }
+    
+    /**
+     * Initialize smooth scrolling
+     */
+    function initSmoothScrolling() {
+        $('a[href^="#"]').on('click', function(e) {
+            const target = $(this.getAttribute('href'));
+            
+            if (target.length) {
+                e.preventDefault();
+                $('html, body').animate({
+                    scrollTop: target.offset().top - 100
+                }, 800, 'easeInOutCubic');
+            }
+        });
+    }
+    
+    /**
+     * Initialize back to top functionality
+     */
+    function initBackToTop() {
+        $('body').append('<button class="back-to-top" aria-label="Back to top"><i class="fas fa-arrow-up"></i></button>');
+        
+        const $backToTop = $('.back-to-top');
+        
+        $(window).on('scroll', function() {
+            if ($(this).scrollTop() > 500) {
+                $backToTop.addClass('visible');
+            } else {
+                $backToTop.removeClass('visible');
+            }
+        });
+        
+        $backToTop.on('click', function(e) {
+            e.preventDefault();
+            $('html, body').animate({ scrollTop: 0 }, 800);
+        });
+    }
+    
+    /**
+     * Initialize scroll reveal animations
+     */
+    function initScrollReveal() {
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('revealed');
+                }
+            });
+        }, {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        });
+        
+        $('.scroll-reveal').each(function() {
+            observer.observe(this);
+        });
+    }
+    
+    /**
+     * Initialize parallax effects
+     */
+    function initParallax() {
+        if (window.innerWidth > 768) {
+            $('.parallax').each(function() {
+                const $element = $(this);
+                const speed = $element.data('speed') || 0.5;
+                
+                $(window).on('scroll', function() {
+                    const scrolled = $(window).scrollTop();
+                    const elementTop = $element.offset().top;
+                    const elementHeight = $element.outerHeight();
+                    const windowHeight = $(window).height();
+                    
+                    if (scrolled + windowHeight > elementTop && scrolled < elementTop + elementHeight) {
+                        const yPos = -(scrolled - elementTop) * speed;
+                        $element.css('transform', 'translateY(' + yPos + 'px)');
+                    }
+                });
+            });
+        }
+    }
+    
+    /**
+     * Initialize search enhancements
+     */
+    function initSearchEnhancements() {
+        const $searchForm = $('.search-form');
+        const $searchInput = $('.search-input');
+        
+        // Add search suggestions
+        $searchInput.on('focus', function() {
+            $(this).closest('.search-form').addClass('focused');
+        });
+        
+        $searchInput.on('blur', function() {
+            setTimeout(() => {
+                $(this).closest('.search-form').removeClass('focused');
+            }, 200);
+        });
+    }
+    
+    /**
+     * Initialize live search
+     */
+    function initLiveSearch() {
+        const $searchInput = $('.search-input');
+        const $searchResults = $('<div class="search-results"></div>');
+        
+        if ($searchInput.length) {
+            $searchInput.closest('.search-form').append($searchResults);
+            
+            let searchTimeout;
+            $searchInput.on('input', function() {
+                const query = $(this).val().trim();
+                
+                clearTimeout(searchTimeout);
+                
+                if (query.length >= 3) {
+                    searchTimeout = setTimeout(function() {
+                        performLiveSearch(query, $searchResults);
+                    }, 300);
+                } else {
+                    $searchResults.hide().empty();
+                }
+            });
+        }
+    }
+    
+    /**
+     * Initialize filter system
+     */
+    function initFilterSystem() {
+        $('.filter-form').on('submit', function(e) {
+            e.preventDefault();
+            const $form = $(this);
+            const $container = $('.posts-container');
+            
+            $.ajax({
+                url: tznew_ajax.ajax_url,
+                type: 'POST',
+                data: $form.serialize() + '&action=tznew_filter_posts&nonce=' + tznew_ajax.nonce,
+                beforeSend: function() {
+                    $container.addClass('loading');
+                },
+                success: function(response) {
+                    if (response.success) {
+                        $container.html(response.data).removeClass('loading');
+                        initScrollReveal();
+                    }
+                },
+                error: function() {
+                    $container.removeClass('loading');
+                }
+            });
+        });
+    }
+    
+    /**
+     * Initialize animations
+     */
+    function initAnimations() {
+        // Stagger animations for cards
+        $('.card').each(function(index) {
+            $(this).css('animation-delay', (index * 0.1) + 's');
+            $(this).addClass('animate-fade-in-up');
+        });
+        
+        // Hero animations
+        $('.hero-title').addClass('animate-fade-in-up');
+        $('.hero-subtitle').addClass('animate-fade-in-up');
+        $('.hero-cta').addClass('animate-fade-in-up');
+    }
+    
+    /**
+     * Initialize header scroll effects
+     */
+    function initHeaderScroll() {
+        const $header = $('.site-header');
+        
+        $(window).on('scroll', throttle(function() {
+            if ($(this).scrollTop() > 100) {
+                $header.addClass('scrolled');
+            } else {
+                $header.removeClass('scrolled');
+            }
+        }, 100));
+    }
+    
+    /**
+     * Initialize image lazy loading
+     */
+    function initImageLazyLoading() {
+        if ('IntersectionObserver' in window) {
+            const imageObserver = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        if (img.dataset.src) {
+                            img.src = img.dataset.src;
+                            img.classList.remove('lazy');
+                            imageObserver.unobserve(img);
+                        }
+                    }
+                });
+            });
+            
+            $('img[data-src]').each(function() {
+                imageObserver.observe(this);
+            });
+        }
+    }
+    
+    /**
+      * Trigger scroll reveal for elements in view
+      */
+     function triggerScrollReveal() {
+         $('.scroll-reveal').each(function() {
+             const elementTop = $(this).offset().top;
+             const elementBottom = elementTop + $(this).outerHeight();
+             const viewportTop = $(window).scrollTop();
+             const viewportBottom = viewportTop + $(window).height();
+             
+             if (elementBottom > viewportTop && elementTop < viewportBottom) {
+                 $(this).addClass('revealed');
+             }
+         });
+     }
+     
+     // Window load
+     $(window).on('load', function() {
         console.log('Window loaded, hiding preloader');
         // Hide preloader with animation
-        $('.preloader').addClass('fade-out');
+        $('#preloader').addClass('fade-out');
         setTimeout(function() {
-            $('.preloader').remove();
+            $('#preloader').remove();
             console.log('Preloader removed');
         }, 600); // Increased timeout to match CSS transition
         
@@ -47,11 +349,11 @@
     
     // Fallback: Hide preloader after 2 seconds regardless
     setTimeout(function() {
-        if ($('.preloader').length) {
+        if ($('#preloader').length) {
             console.log('Fallback: Removing preloader after timeout');
-            $('.preloader').addClass('fade-out');
+            $('#preloader').addClass('fade-out');
             setTimeout(function() {
-                $('.preloader').remove();
+                $('#preloader').remove();
             }, 600);
         }
     }, 2000); // Reduced timeout for faster loading

@@ -624,8 +624,18 @@ function tznew_booking_cta($post_id) {
     
     $output .= '<div class="booking-info">';
     $output .= '<p><i class="fas fa-info-circle"></i> ' . __('Need help with your booking?', 'tznew') . '</p>';
-    $output .= '<p><i class="fas fa-phone"></i> <a href="tel:+9771234567890">+977 1234567890</a></p>';
-    $output .= '<p><i class="fas fa-envelope"></i> <a href="mailto:web@techzeninc.com">web@techzeninc.com</a></p>';
+    
+    $booking_phone = tznew_get_company_phone();
+    if ($booking_phone) {
+        $phone_clean = str_replace(['+', '-', ' '], '', $booking_phone);
+        $output .= '<p><i class="fas fa-phone"></i> <a href="tel:' . esc_attr($phone_clean) . '">' . esc_html($booking_phone) . '</a></p>';
+    }
+    
+    $booking_email = tznew_get_booking_email();
+    if ($booking_email) {
+        $output .= '<p><i class="fas fa-envelope"></i> <a href="mailto:' . esc_attr($booking_email) . '">' . esc_html($booking_email) . '</a></p>';
+    }
+    
     $output .= '</div>';
     
     $output .= '</div>';
@@ -637,14 +647,30 @@ function tznew_booking_cta($post_id) {
  * Get company information
  */
 function tznew_company_info() {
+    $company_name = tznew_get_company_name();
+    $company_address = tznew_get_company_address();
+    $company_phone = tznew_get_company_phone();
+    $company_email = tznew_get_company_email();
+    $site_url = home_url();
+    
     $output = '<div class="company-info">';
-    $output .= '<h4>Techzen Corporation</h4>';
+    $output .= '<h4>' . esc_html($company_name) . '</h4>';
     $output .= '<address>';
-    $output .= 'Sherpa Mall, Durbarmarg<br>';
-    $output .= 'Kathmandu, Nepal<br>';
-    $output .= '<i class="fas fa-phone"></i> <a href="tel:+9771234567890">+977 1234567890</a><br>';
-    $output .= '<i class="fas fa-envelope"></i> <a href="mailto:web@techzeninc.com">web@techzeninc.com</a><br>';
-    $output .= '<i class="fas fa-globe"></i> <a href="https://techzeninc.com" target="_blank">techzeninc.com</a>';
+    
+    if ($company_address) {
+        $output .= esc_html($company_address) . '<br>';
+    }
+    
+    if ($company_phone) {
+        $phone_clean = str_replace(['+', '-', ' '], '', $company_phone);
+        $output .= '<i class="fas fa-phone"></i> <a href="tel:' . esc_attr($phone_clean) . '">' . esc_html($company_phone) . '</a><br>';
+    }
+    
+    if ($company_email) {
+        $output .= '<i class="fas fa-envelope"></i> <a href="mailto:' . esc_attr($company_email) . '">' . esc_html($company_email) . '</a><br>';
+    }
+    
+    $output .= '<i class="fas fa-globe"></i> <a href="' . esc_url($site_url) . '" target="_blank">' . esc_html(parse_url($site_url, PHP_URL_HOST)) . '</a>';
     $output .= '</address>';
     $output .= '</div>';
     
