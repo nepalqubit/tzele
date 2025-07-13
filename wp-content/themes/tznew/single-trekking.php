@@ -171,11 +171,11 @@ get_header();
 							<?php endif; ?>
 							
 							<div class="space-y-3">
-								<a href="#contact" class="block w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 text-center">
+								<a href="<?php echo esc_url(home_url('/booking?trekking_id=' . get_the_ID())); ?>" class="block w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 text-center">
 									<i class="fas fa-paper-plane mr-2"></i>
 									<?php esc_html_e('Book Now', 'tznew'); ?>
 								</a>
-								<a href="#inquiry" class="block w-full bg-white hover:bg-gray-50 text-blue-600 font-bold py-3 px-6 rounded-xl border-2 border-blue-600 transition-all duration-300 text-center">
+								<a href="<?php echo esc_url(home_url('/inquiry?trekking_id=' . get_the_ID())); ?>" class="block w-full bg-white hover:bg-gray-50 text-blue-600 font-bold py-3 px-6 rounded-xl border-2 border-blue-600 transition-all duration-300 text-center">
 									<i class="fas fa-question-circle mr-2"></i>
 									<?php esc_html_e('Send Inquiry', 'tznew'); ?>
 								</a>

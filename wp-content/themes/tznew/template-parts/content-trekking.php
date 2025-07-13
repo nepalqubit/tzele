@@ -932,11 +932,11 @@ if (!defined('ABSPATH')) {
                     <h2 class="text-3xl font-bold mb-4"><?php esc_html_e('Ready to Book This Trek?', 'tznew'); ?></h2>
                     <p class="text-blue-100 mb-6 text-lg"><?php esc_html_e('Contact us today to start planning your adventure!', 'tznew'); ?></p>
                     <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                        <a href="#contact" class="inline-flex items-center px-8 py-3 bg-white text-blue-600 rounded-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 font-bold shadow-md">
+                        <a href="<?php echo esc_url(home_url('/booking?trekking_id=' . get_the_ID())); ?>" class="inline-flex items-center px-8 py-3 bg-white text-blue-600 rounded-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 font-bold shadow-md">
                             <i class="fas fa-phone mr-2" aria-hidden="true"></i>
-                            <?php esc_html_e('Contact Us', 'tznew'); ?>
+                            <?php esc_html_e('Book Now', 'tznew'); ?>
                         </a>
-                        <a href="#inquiry" class="inline-flex items-center px-8 py-3 bg-transparent border-2 border-white text-white rounded-lg hover:bg-white hover:text-blue-600 transition-all duration-300 transform hover:scale-105 font-bold">
+                        <a href="<?php echo esc_url(home_url('/inquiry?trekking_id=' . get_the_ID())); ?>" class="inline-flex items-center px-8 py-3 bg-transparent border-2 border-white text-white rounded-lg hover:bg-white hover:text-blue-600 transition-all duration-300 transform hover:scale-105 font-bold">
                             <i class="fas fa-envelope mr-2" aria-hidden="true"></i>
                             <?php esc_html_e('Send Inquiry', 'tznew'); ?>
                         </a>

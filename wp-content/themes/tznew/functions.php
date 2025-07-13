@@ -984,11 +984,53 @@ function tznew_log_error($message, $context = []) {
 }
 
 /**
+ * Create required pages
+ */
+function tznew_create_required_pages() {
+    // Create Booking Page
+    $booking_page = get_page_by_path('booking');
+    if (!$booking_page) {
+        $booking_page_id = wp_insert_post(array(
+            'post_title' => 'Booking',
+            'post_content' => '',
+            'post_status' => 'publish',
+            'post_type' => 'page',
+            'post_name' => 'booking',
+            'page_template' => 'page-booking.php'
+        ));
+        
+        if ($booking_page_id && !is_wp_error($booking_page_id)) {
+            update_post_meta($booking_page_id, '_wp_page_template', 'page-booking.php');
+        }
+    }
+    
+    // Create Inquiry Page
+    $inquiry_page = get_page_by_path('inquiry');
+    if (!$inquiry_page) {
+        $inquiry_page_id = wp_insert_post(array(
+            'post_title' => 'Inquiry',
+            'post_content' => '',
+            'post_status' => 'publish',
+            'post_type' => 'page',
+            'post_name' => 'inquiry',
+            'page_template' => 'page-inquiry.php'
+        ));
+        
+        if ($inquiry_page_id && !is_wp_error($inquiry_page_id)) {
+            update_post_meta($inquiry_page_id, '_wp_page_template', 'page-inquiry.php');
+        }
+    }
+}
+
+/**
  * Theme activation hook
  */
 function tznew_theme_activation() {
     // Flush rewrite rules
     flush_rewrite_rules();
+    
+    // Create required pages
+    tznew_create_required_pages();
     
     // Set default options
     if (!get_option('tznew_theme_activated')) {

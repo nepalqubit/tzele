@@ -28,6 +28,7 @@
         initImageLazyLoading();
         initializeBookingForm();
         initializeInquiryForm();
+        initMultiStepFormStyles();
         
     });
     
@@ -48,10 +49,10 @@
                 const isOpen = $mobileMenu.hasClass('active');
                 
                 if (isOpen) {
-                    closeMobileMenu();
-                } else {
-                    openMobileMenu();
-                }
+                     closeMobileMenu();
+                 } else {
+                     openMobileMenu();
+                 }
             });
             
             // Close menu when clicking outside
@@ -871,6 +872,9 @@
          const $bookingForm = $('#booking-form');
          if ($bookingForm.length === 0) return;
          
+         // Initialize multi-step functionality
+         initMultiStepForm($bookingForm);
+         
          // Real-time validation
          $bookingForm.find('input, select, textarea').on('blur', function() {
              validateField($(this));
@@ -901,17 +905,16 @@
                  contentType: false,
                  success: function(response) {
                      if (response.success) {
-                         showFormMessage($form, response.data.message, 'success');
-                         $form[0].reset();
-                         // Remove any error states
-                         $form.find('.form-group').removeClass('error success');
-                         $form.find('.error-message').addClass('hidden');
+                         $form.hide();
+                         $('#booking-success').removeClass('hidden').addClass('show');
                      } else {
-                         showFormMessage($form, response.data.message || 'Booking submission failed', 'error');
+                         $('#booking-error').removeClass('hidden').addClass('show');
+                         $('#booking-error .error-text').text(response.data.message || 'Booking submission failed');
                      }
                  },
                  error: function() {
-                     showFormMessage($form, 'An error occurred. Please try again.', 'error');
+                     $('#booking-error').removeClass('hidden').addClass('show');
+                     $('#booking-error .error-text').text('An error occurred. Please try again.');
                  },
                  complete: function() {
                      showFormLoading($form, false);
@@ -927,6 +930,9 @@
          const $inquiryForm = $('#inquiry-form');
          if ($inquiryForm.length === 0) return;
          
+         // Initialize multi-step functionality
+         initMultiStepForm($inquiryForm);
+         
          // Real-time validation
          $inquiryForm.find('input, select, textarea').on('blur', function() {
              validateField($(this));
@@ -937,11 +943,8 @@
          if ($messageField.length) {
              $messageField.on('input', function() {
                  const length = $(this).val().length;
-                 const $counter = $(this).siblings('.character-counter');
-                 if ($counter.length === 0) {
-                     $(this).after('<div class="character-counter text-sm text-gray-500 mt-1"></div>');
-                 }
-                 $(this).siblings('.character-counter').text(length + ' characters');
+                 const $counter = $(this).closest('.form-group').find('.character-count .current-count');
+                 $counter.text(length);
                  
                  if (length < 10) {
                      $(this).addClass('border-red-300').removeClass('border-green-300');
@@ -976,19 +979,16 @@
                  contentType: false,
                  success: function(response) {
                      if (response.success) {
-                         showFormMessage($form, response.data.message, 'success');
-                         $form[0].reset();
-                         // Remove any error states
-                         $form.find('.form-group').removeClass('error success');
-                         $form.find('.error-message').addClass('hidden');
-                         // Reset character counter
-                         $form.find('.character-counter').text('0 characters');
+                         $form.hide();
+                         $('#inquiry-success').removeClass('hidden').addClass('show');
                      } else {
-                         showFormMessage($form, response.data.message || 'Inquiry submission failed', 'error');
+                         $('#inquiry-error').removeClass('hidden').addClass('show');
+                         $('#inquiry-error .error-text').text(response.data.message || 'Inquiry submission failed');
                      }
                  },
                  error: function() {
-                     showFormMessage($form, 'An error occurred. Please try again.', 'error');
+                     $('#inquiry-error').removeClass('hidden').addClass('show');
+                     $('#inquiry-error .error-text').text('An error occurred. Please try again.');
                  },
                  complete: function() {
                      showFormLoading($form, false);
@@ -998,6 +998,355 @@
      }
     
     /**
+      * Initialize multi-step form functionality
+      */
+     function initMultiStepForm($form) {
+         const $steps = $form.find('.form-step');
+         const $progressBar = $form.find('.progress-fill');
+         let currentStep = 1;
+         const totalSteps = $steps.length;
+         
+         // Initialize first step
+         showStep(currentStep);
+         updateProgress();
+         
+         // Next step buttons
+         $form.on('click', '.next-step', function(e) {
+             e.preventDefault();
+             
+             // Validate current step
+             if (validateCurrentStep(currentStep)) {
+                 if (currentStep < totalSteps) {
+                     currentStep++;
+                     showStep(currentStep);
+                     updateProgress();
+                 }
+             }
+         });
+         
+         // Previous step buttons
+         $form.on('click', '.prev-step', function(e) {
+             e.preventDefault();
+             
+             if (currentStep > 1) {
+                 currentStep--;
+                 showStep(currentStep);
+                 updateProgress();
+             }
+         });
+         
+         function showStep(step) {
+             $steps.removeClass('active');
+             $steps.filter(`[data-step="${step}"]`).addClass('active');
+             
+             // Update step indicators
+             $form.find('.step-header span').removeClass('bg-green-500 text-white').addClass('bg-gray-300 text-gray-600');
+             for (let i = 1; i <= step; i++) {
+                 $steps.filter(`[data-step="${i}"]`).find('.step-header span').removeClass('bg-gray-300 text-gray-600').addClass('bg-green-500 text-white');
+             }
+         }
+         
+         function updateProgress() {
+             const progressPercent = (currentStep / totalSteps) * 100;
+             $progressBar.css('width', progressPercent + '%');
+         }
+         
+         function validateCurrentStep(step) {
+             const $currentStep = $steps.filter(`[data-step="${step}"]`);
+             let isValid = true;
+             
+             // Validate required fields in current step
+             $currentStep.find('[required]').each(function() {
+                 if (!validateField($(this))) {
+                     isValid = false;
+                 }
+             });
+             
+             // Additional step-specific validation
+             if (step === 1) {
+                 // Personal information validation
+                 const $email = $currentStep.find('input[type="email"]');
+                 if ($email.length && $email.val() && !isValidEmail($email.val())) {
+                     showFieldError($email, 'Please enter a valid email address');
+                     isValid = false;
+                 }
+                 
+                 const $phone = $currentStep.find('input[type="tel"]');
+                 if ($phone.length && $phone.val() && !isValidPhone($phone.val())) {
+                     showFieldError($phone, 'Please enter a valid phone number');
+                     isValid = false;
+                 }
+             }
+             
+             if (step === 2 && $form.attr('id') === 'booking-form') {
+                 // Booking form trip details validation
+                 const $dateField = $currentStep.find('#preferred_date');
+                 if ($dateField.length && $dateField.val()) {
+                     const selectedDate = new Date($dateField.val());
+                     const minDate = new Date();
+                     minDate.setDate(minDate.getDate() + 7);
+                     
+                     if (selectedDate < minDate) {
+                         showFieldError($dateField, 'Please select a date at least one week from today');
+                         isValid = false;
+                     }
+                 }
+             }
+             
+             if (step === 3 || (step === 2 && $form.attr('id') === 'inquiry-form')) {
+                 // Message validation
+                 const $messageField = $currentStep.find('textarea');
+                 if ($messageField.length && $messageField.val().trim().length < 10) {
+                     showFieldError($messageField, 'Please provide a more detailed message (minimum 10 characters)');
+                     isValid = false;
+                 }
+             }
+             
+             return isValid;
+         }
+      }
+      
+     /**
+      * Initialize multi-step form styles
+      */
+     function initMultiStepFormStyles() {
+         // Add CSS styles for multi-step forms
+         const styles = `
+             <style>
+                 .form-step {
+                     display: none;
+                 }
+                 .form-step.active {
+                     display: block;
+                 }
+                 .progress-bar {
+                     background-color: #e5e7eb;
+                     border-radius: 9999px;
+                     height: 8px;
+                     overflow: hidden;
+                 }
+                 .progress-fill {
+                     background-color: #10b981;
+                     height: 100%;
+                     transition: width 0.3s ease;
+                     border-radius: 9999px;
+                 }
+                 .step-header {
+                     display: flex;
+                     align-items: center;
+                     margin-bottom: 1rem;
+                 }
+                 .step-header span {
+                     display: inline-flex;
+                     align-items: center;
+                     justify-content: center;
+                     width: 2rem;
+                     height: 2rem;
+                     border-radius: 50%;
+                     font-weight: 600;
+                     font-size: 0.875rem;
+                     margin-right: 0.75rem;
+                     transition: all 0.3s ease;
+                 }
+                 .form-navigation {
+                     display: flex;
+                     justify-content: space-between;
+                     margin-top: 2rem;
+                     padding-top: 1.5rem;
+                     border-top: 1px solid #e5e7eb;
+                 }
+                 .btn-nav {
+                     padding: 0.75rem 1.5rem;
+                     border-radius: 0.5rem;
+                     font-weight: 600;
+                     transition: all 0.3s ease;
+                     cursor: pointer;
+                     border: none;
+                 }
+                 .btn-nav.prev-step {
+                     background-color: #f3f4f6;
+                     color: #374151;
+                 }
+                 .btn-nav.prev-step:hover {
+                     background-color: #e5e7eb;
+                 }
+                 .btn-nav.next-step {
+                     background-color: #10b981;
+                     color: white;
+                 }
+                 .btn-nav.next-step:hover {
+                     background-color: #059669;
+                 }
+                 .field-error {
+                     color: #dc2626;
+                     font-size: 0.875rem;
+                     margin-top: 0.25rem;
+                 }
+                 .field-success {
+                     color: #059669;
+                     font-size: 0.875rem;
+                     margin-top: 0.25rem;
+                 }
+                 .form-field.error input,
+                 .form-field.error select,
+                 .form-field.error textarea {
+                     border-color: #dc2626;
+                 }
+                 .form-field.success input,
+                 .form-field.success select,
+                 .form-field.success textarea {
+                     border-color: #059669;
+                 }
+                 
+                 /* Enhanced Form Field Styling for Better Readability */
+                 .form-input,
+                 input[type="text"],
+                 input[type="email"],
+                 input[type="tel"],
+                 input[type="date"],
+                 input[type="number"],
+                 select,
+                 textarea {
+                     background-color: #ffffff !important;
+                     color: #1f2937 !important;
+                     border: 2px solid #d1d5db !important;
+                     border-radius: 0.75rem !important;
+                     padding: 1rem !important;
+                     font-size: 1rem !important;
+                     line-height: 1.5 !important;
+                     transition: all 0.3s ease !important;
+                     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important;
+                 }
+                 
+                 .form-input:focus,
+                 input[type="text"]:focus,
+                 input[type="email"]:focus,
+                 input[type="tel"]:focus,
+                 input[type="date"]:focus,
+                 input[type="number"]:focus,
+                 select:focus,
+                 textarea:focus {
+                     outline: none !important;
+                     border-color: #3b82f6 !important;
+                     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+                     background-color: #ffffff !important;
+                     color: #1f2937 !important;
+                 }
+                 
+                 .form-input::placeholder,
+                 input::placeholder,
+                 textarea::placeholder {
+                     color: #9ca3af !important;
+                     opacity: 1 !important;
+                 }
+                 
+                 /* Dark mode compatibility */
+                 @media (prefers-color-scheme: dark) {
+                     .form-input,
+                     input[type="text"],
+                     input[type="email"],
+                     input[type="tel"],
+                     input[type="date"],
+                     input[type="number"],
+                     select,
+                     textarea {
+                         background-color: #ffffff !important;
+                         color: #1f2937 !important;
+                         border-color: #d1d5db !important;
+                     }
+                 }
+                 
+                 /* Mobile Responsiveness */
+                 @media (max-width: 768px) {
+                     .form-input,
+                     input[type="text"],
+                     input[type="email"],
+                     input[type="tel"],
+                     input[type="date"],
+                     input[type="number"],
+                     select,
+                     textarea {
+                         font-size: 16px !important;
+                         padding: 0.875rem !important;
+                     }
+                     
+                     .form-navigation {
+                         flex-direction: column;
+                         gap: 1rem;
+                     }
+                     
+                     .btn-nav {
+                         width: 100%;
+                         text-align: center;
+                         padding: 1rem !important;
+                     }
+                     
+                     .grid {
+                         grid-template-columns: 1fr !important;
+                         gap: 1rem !important;
+                     }
+                 }
+                 
+                 /* Checkbox and Radio Button Styling */
+                 input[type="checkbox"],
+                 input[type="radio"] {
+                     width: 1.25rem !important;
+                     height: 1.25rem !important;
+                     accent-color: #3b82f6 !important;
+                 }
+                 
+                 /* Select dropdown arrow */
+                 select {
+                     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e") !important;
+                     background-position: right 0.75rem center !important;
+                     background-repeat: no-repeat !important;
+                     background-size: 1.5em 1.5em !important;
+                     padding-right: 2.5rem !important;
+                     appearance: none !important;
+                 }
+                 
+                 /* Error and Success States */
+                 .form-group.error .form-input,
+                 .form-group.error input,
+                 .form-group.error select,
+                 .form-group.error textarea {
+                     border-color: #ef4444 !important;
+                     background-color: #fef2f2 !important;
+                     color: #1f2937 !important;
+                 }
+                 
+                 .form-group.success .form-input,
+                 .form-group.success input,
+                 .form-group.success select,
+                 .form-group.success textarea {
+                     border-color: #10b981 !important;
+                     background-color: #f0fdf4 !important;
+                     color: #1f2937 !important;
+                 }
+                 
+                 /* Label Styling */
+                 .form-label {
+                     color: #374151 !important;
+                     font-weight: 600 !important;
+                     margin-bottom: 0.5rem !important;
+                     display: block !important;
+                 }
+                 
+                 /* Help Text */
+                 .help-text {
+                     color: #6b7280 !important;
+                     font-size: 0.875rem !important;
+                     margin-top: 0.25rem !important;
+                 }
+             </style>
+         `;
+         
+         if (!$('head').find('#multi-step-form-styles').length) {
+             $('head').append(styles.replace('<style>', '<style id="multi-step-form-styles">'));
+         }
+     }
+      
+     /**
       * Validate booking form
       */
      function validateBookingForm($form) {
