@@ -35,6 +35,26 @@ if ( function_exists( 'tznew_elementor_location_exists' ) && tznew_elementor_loc
 	<!-- Filter Section -->
 	<section class="bg-white border-b border-gray-200 py-6">
 		<div class="container mx-auto px-4">
+			<!-- Featured/Popular Toggle -->
+			<div class="mb-6">
+				<div class="flex items-center justify-center">
+					<div class="bg-gray-100 rounded-xl p-1 flex">
+						<button type="button" id="all-tours-btn" class="tour-type-toggle active px-6 py-2 rounded-lg font-medium transition-all duration-300">
+							<i class="fas fa-list mr-2"></i>
+							<?php esc_html_e('All Tours', 'tznew'); ?>
+						</button>
+						<button type="button" id="featured-tours-btn" class="tour-type-toggle px-6 py-2 rounded-lg font-medium transition-all duration-300">
+							<i class="fas fa-star mr-2"></i>
+							<?php esc_html_e('Featured Tours', 'tznew'); ?>
+						</button>
+						<button type="button" id="popular-tours-btn" class="tour-type-toggle px-6 py-2 rounded-lg font-medium transition-all duration-300">
+							<i class="fas fa-fire mr-2"></i>
+							<?php esc_html_e('Popular Tours', 'tznew'); ?>
+						</button>
+					</div>
+				</div>
+			</div>
+			
 			<div class="flex flex-wrap items-center justify-between gap-4">
 				<div class="flex items-center space-x-4">
 					<span class="text-gray-700 font-medium"><?php esc_html_e('Filter by:', 'tznew'); ?></span>
@@ -217,12 +237,53 @@ if ( function_exists( 'tznew_elementor_location_exists' ) && tznew_elementor_loc
 	</section>
 </main>
 
+<style>
+.tour-type-toggle {
+	@apply text-gray-600 hover:text-green-600;
+}
+.tour-type-toggle.active {
+	@apply bg-green-600 text-white shadow-md;
+}
+</style>
+
 <script>
 // Simple filtering functionality
 document.addEventListener('DOMContentLoaded', function() {
 	const regionFilter = document.getElementById('region-filter');
 	const tourTypeFilter = document.getElementById('tour-type-filter');
 	const sortFilter = document.getElementById('sort-filter');
+	
+	// Tour type toggle functionality
+	const tourTypeToggles = document.querySelectorAll('.tour-type-toggle');
+	tourTypeToggles.forEach(toggle => {
+		toggle.addEventListener('click', function() {
+			const tourType = this.id.replace('-btn', '').replace('-', '_');
+			
+			// Update active state
+			tourTypeToggles.forEach(t => t.classList.remove('active'));
+			this.classList.add('active');
+			
+			// Redirect with tour type parameter
+			const url = new URL(window.location);
+			if (tourType === 'all_tours') {
+				url.searchParams.delete('trek_type');
+			} else {
+				url.searchParams.set('trek_type', tourType.replace('_tours', ''));
+			}
+			window.location.href = url.toString();
+		});
+	});
+	
+	// Set active state based on URL parameter
+	const urlParams = new URLSearchParams(window.location.search);
+	const trekType = urlParams.get('trek_type');
+	if (trekType === 'featured') {
+		document.getElementById('featured-tours-btn').classList.add('active');
+		document.getElementById('all-tours-btn').classList.remove('active');
+	} else if (trekType === 'popular') {
+		document.getElementById('popular-tours-btn').classList.add('active');
+		document.getElementById('all-tours-btn').classList.remove('active');
+	}
 	
 	if (regionFilter || tourTypeFilter || sortFilter) {
 		// Add event listeners for filters

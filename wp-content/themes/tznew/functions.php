@@ -182,6 +182,9 @@ function tznew_scripts() {
     
     // Enqueue custom styles
     wp_enqueue_style('tznew-custom', TZNEW_THEME_URI . '/assets/css/custom.css', ['tznew-style'], TZNEW_VERSION);
+    
+    // Enqueue customizable styles for trekking and tours
+    wp_enqueue_style('tznew-customizable', TZNEW_THEME_URI . '/assets/css/customizable-styles.css', ['tznew-custom'], TZNEW_VERSION);
 
     // Enqueue scripts
     // Enqueue jQuery if not already loaded
@@ -218,6 +221,431 @@ function tznew_scripts() {
         'nonce'    => wp_create_nonce('tznew_nonce'),
     ]);
 
+    // AJAX handler for getting trek locations (legacy)
+    add_action('wp_ajax_get_trek_locations', 'get_trek_locations_ajax');
+    add_action('wp_ajax_nopriv_get_trek_locations', 'get_trek_locations_ajax');
+
+    // AJAX handler for getting all tour and trek locations
+    add_action('wp_ajax_get_all_locations', 'get_all_locations_ajax');
+    add_action('wp_ajax_nopriv_get_all_locations', 'get_all_locations_ajax');
+
+    // Register AJAX actions for PDF generation
+    add_action('wp_ajax_generate_pdf_itinerary', 'generate_itinerary_pdf_ajax');
+    add_action('wp_ajax_nopriv_generate_pdf_itinerary', 'generate_itinerary_pdf_ajax');
+
+    /**
+     * Generate and download itinerary PDF
+     */
+    function generate_itinerary_pdf_ajax() {
+        // Add error logging
+        error_log('PDF AJAX called with data: ' . print_r($_POST, true));
+        
+        // Verify nonce for security
+        if (!wp_verify_nonce($_POST['nonce'], 'pdf_itinerary_nonce')) {
+            error_log('PDF AJAX: Nonce verification failed');
+            wp_send_json_error('Security check failed');
+            return;
+        }
+        
+        $post_id = intval($_POST['post_id']);
+        $post_type = get_post_type($post_id);
+        
+        error_log('PDF AJAX: Post ID: ' . $post_id . ', Post type: ' . $post_type);
+        
+        // Verify post exists and is trekking or tours
+        if (!$post_id || !in_array($post_type, ['trekking', 'tours'])) {
+            error_log('PDF AJAX: Invalid post or post type');
+            wp_send_json_error('Invalid post');
+            return;
+        }
+        
+        // Use HTML-based PDF generation for better compatibility
+        generate_simple_pdf($post_id, $post_type);
+    }
+
+
+
+    /**
+     * Generate PDF using HTML (compatible with all environments)
+     */
+    function generate_simple_pdf($post_id, $post_type) {
+        $post = get_post($post_id);
+        $title = get_the_title($post_id);
+        
+        // Generate HTML content
+        ob_start();
+        ?>
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title><?php echo esc_html($title); ?> - Itinerary</title>
+            <style>
+                @media print {
+                    body { margin: 0; }
+                    .no-print { display: none; }
+                }
+                body { 
+                    font-family: Arial, sans-serif; 
+                    margin: 20px; 
+                    line-height: 1.6;
+                    color: #333;
+                }
+                h1 { 
+                    color: #2563eb; 
+                    text-align: center; 
+                    border-bottom: 3px solid #3b82f6;
+                    padding-bottom: 10px;
+                }
+                h2 { 
+                    color: #1e40af; 
+                    border-bottom: 2px solid #3b82f6; 
+                    padding-bottom: 5px; 
+                    margin-top: 30px;
+                }
+                h3 { 
+                    color: #1e3a8a; 
+                    margin-top: 20px;
+                }
+                .meta-info { 
+                    background: #f3f4f6; 
+                    padding: 20px; 
+                    border-radius: 8px; 
+                    margin: 20px 0;
+                    border-left: 5px solid #3b82f6;
+                }
+                .day-item { 
+                    margin: 20px 0; 
+                    padding: 20px; 
+                    border-left: 4px solid #3b82f6; 
+                    background: #f8fafc;
+                    border-radius: 5px;
+                }
+                .highlight { 
+                    margin: 8px 0; 
+                    padding: 5px 0;
+                }
+                ul { 
+                    list-style-type: disc; 
+                    margin-left: 20px; 
+                }
+                .includes-excludes {
+                    background: #fef3c7;
+                    padding: 15px;
+                    border-radius: 8px;
+                    margin: 20px 0;
+                    border-left: 4px solid #f59e0b;
+                }
+                .cost-info {
+                    background: #ecfdf5;
+                    padding: 15px;
+                    border-radius: 8px;
+                    margin: 20px 0;
+                    border-left: 4px solid #10b981;
+                }
+                .print-instruction {
+                    background: #dbeafe;
+                    padding: 15px;
+                    border-radius: 8px;
+                    margin: 20px 0;
+                    text-align: center;
+                    border: 2px dashed #3b82f6;
+                }
+                @page {
+                    margin: 1in;
+                }
+            </style>
+            <script>
+                window.onload = function() {
+                    setTimeout(function() {
+                        window.print();
+                    }, 1000);
+                };
+            </script>
+        </head>
+        <body>
+            <div class="print-instruction no-print">
+                <strong>Instructions:</strong> This page will automatically open the print dialog. 
+                Choose "Save as PDF" or "Microsoft Print to PDF" to save as a PDF file.
+            </div>
+            
+            <h1><?php echo esc_html($title); ?></h1>
+            
+            <?php
+            // Get post data
+            $overview = tznew_get_field_safe('overview');
+            $duration = tznew_get_field_safe('duration');
+            $difficulty = tznew_get_field_safe('difficulty');
+            $max_altitude = tznew_get_field_safe('max_altitude');
+            $best_season = tznew_get_field_safe('best_season');
+            $group_size = tznew_get_field_safe('group_size');
+            ?>
+            
+            <div class="meta-info">
+                <h2>Trip Information</h2>
+                <?php if ($duration) : ?><p><strong>Duration:</strong> <?php echo esc_html($duration); ?> Days</p><?php endif; ?>
+                <?php if ($difficulty) : ?><p><strong>Difficulty:</strong> <?php echo esc_html(ucfirst($difficulty)); ?></p><?php endif; ?>
+                <?php if ($max_altitude) : ?><p><strong>Max Altitude:</strong> <?php echo esc_html($max_altitude); ?>m</p><?php endif; ?>
+                <?php if ($best_season) : ?><p><strong>Best Season:</strong> <?php echo esc_html($best_season); ?></p><?php endif; ?>
+                <?php if ($group_size) : ?><p><strong>Group Size:</strong> <?php echo esc_html($group_size); ?></p><?php endif; ?>
+            </div>
+            
+            <?php if ($overview) : ?>
+                <h2>Overview</h2>
+                <div><?php echo wp_kses_post($overview); ?></div>
+            <?php endif; ?>
+            
+            <?php if (tznew_have_rows_safe('highlights')) : ?>
+                <h2>Highlights</h2>
+                <ul>
+                    <?php while (tznew_have_rows_safe('highlights')) : tznew_the_row_safe(); ?>
+                        <?php $highlight = tznew_get_sub_field_safe('highlight'); ?>
+                        <?php if ($highlight) : ?>
+                            <li class="highlight"><?php echo wp_kses_post($highlight); ?></li>
+                        <?php endif; ?>
+                    <?php endwhile; ?>
+                </ul>
+            <?php endif; ?>
+            
+            <?php if (tznew_have_rows_safe('itinerary')) : ?>
+                <h2>Detailed Itinerary</h2>
+                <?php 
+                $day_count = 1;
+                while (tznew_have_rows_safe('itinerary')) : 
+                    tznew_the_row_safe();
+                    $day_title = tznew_get_sub_field_safe('title');
+                    $day_description = tznew_get_sub_field_safe('description');
+                    $place_name = tznew_get_sub_field_safe('place_name');
+                    $altitude = tznew_get_sub_field_safe('altitude');
+                    $walking_time = tznew_get_sub_field_safe('walking_time');
+                    $distance = tznew_get_sub_field_safe('distance');
+                    $accommodation = tznew_get_sub_field_safe('accommodation');
+                    $meals = tznew_get_sub_field_safe('meals');
+                ?>
+                    <div class="day-item">
+                        <h3>Day <?php echo esc_html($day_count); ?>: <?php echo esc_html($day_title); ?></h3>
+                        <?php if ($place_name) : ?><p><strong>Location:</strong> <?php echo esc_html($place_name); ?></p><?php endif; ?>
+                        <?php if ($altitude) : ?><p><strong>Altitude:</strong> <?php echo esc_html(number_format($altitude)); ?>m</p><?php endif; ?>
+                        <?php if ($walking_time) : ?><p><strong>Walking Time:</strong> <?php echo esc_html($walking_time); ?></p><?php endif; ?>
+                        <?php if ($distance) : ?><p><strong>Distance:</strong> <?php echo esc_html($distance); ?></p><?php endif; ?>
+                        <?php if ($accommodation) : ?><p><strong>Accommodation:</strong> <?php echo esc_html($accommodation); ?></p><?php endif; ?>
+                        <?php if ($meals) : ?><p><strong>Meals:</strong> <?php echo esc_html($meals); ?></p><?php endif; ?>
+                        <?php if ($day_description) : ?>
+                            <div><?php echo wp_kses_post($day_description); ?></div>
+                        <?php endif; ?>
+                    </div>
+                <?php 
+                    $day_count++;
+                endwhile; 
+                ?>
+            <?php endif; ?>
+            
+            <?php
+            // Includes/Excludes
+            $includes = tznew_get_field_safe('includes');
+            $excludes = tznew_get_field_safe('excludes');
+            ?>
+            
+            <?php if ($includes) : ?>
+                <div class="includes-excludes">
+                    <h2>What's Included</h2>
+                    <div><?php echo wp_kses_post($includes); ?></div>
+                </div>
+            <?php endif; ?>
+            
+            <?php if ($excludes) : ?>
+                <div class="includes-excludes">
+                    <h2>What's Not Included</h2>
+                    <div><?php echo wp_kses_post($excludes); ?></div>
+                </div>
+            <?php endif; ?>
+            
+            <?php
+            // Cost Information
+            $cost_info = tznew_get_field_safe('cost_info');
+            if ($cost_info && isset($cost_info['price_usd']) && $cost_info['price_usd']) :
+            ?>
+                <div class="cost-info">
+                    <h2>Cost Information</h2>
+                    <p><strong>Price:</strong> $<?php echo esc_html(number_format($cost_info['price_usd'])); ?></p>
+                    <?php if (isset($cost_info['pricing_type']) && $cost_info['pricing_type']) : ?>
+                        <p><strong>Pricing Type:</strong> <?php echo esc_html($cost_info['pricing_type']); ?></p>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
+            
+            <p style="text-align: center; margin-top: 40px; font-size: 12px; color: #666; border-top: 1px solid #ddd; padding-top: 20px;">
+                Generated by Dragon Holidays - <?php echo date('Y-m-d H:i:s'); ?><br>
+                <em>For the latest information, visit our website</em>
+            </p>
+        </body>
+        </html>
+        <?php
+        $html = ob_get_clean();
+        
+        error_log('PDF Generation: HTML length: ' . strlen($html));
+        error_log('PDF Generation: Title: ' . $title);
+        
+        // Return JSON response with the HTML content for opening in new window
+        wp_send_json_success(array(
+            'html' => $html,
+            'filename' => sanitize_file_name($title . '-itinerary')
+        ));
+    }
+
+    function get_trek_locations_ajax() {
+        $trek_locations = array();
+        
+        // Query all published trekking posts
+        $treks = get_posts(array(
+            'post_type' => 'trekking',
+            'post_status' => 'publish',
+            'numberposts' => -1,
+            'meta_query' => array(
+                'relation' => 'AND',
+                array(
+                    'key' => 'itinerary',
+                    'compare' => 'EXISTS'
+                )
+            )
+        ));
+        
+        foreach ($treks as $trek) {
+            $itinerary = get_field('itinerary', $trek->ID);
+            
+            if ($itinerary && is_array($itinerary)) {
+                // Get the first day with coordinates as the main location
+                foreach ($itinerary as $day) {
+                    $coordinates = isset($day['coordinates']) ? $day['coordinates'] : null;
+                    
+                    if ($coordinates && isset($coordinates['latitude']) && isset($coordinates['longitude']) && 
+                        !empty($coordinates['latitude']) && !empty($coordinates['longitude'])) {
+                        
+                        $trek_data = array(
+                            'title' => get_the_title($trek->ID),
+                            'url' => get_permalink($trek->ID),
+                            'latitude' => floatval($coordinates['latitude']),
+                            'longitude' => floatval($coordinates['longitude']),
+                            'duration' => get_field('duration', $trek->ID),
+                            'difficulty' => get_field('difficulty', $trek->ID),
+                            'max_altitude' => get_field('max_altitude', $trek->ID),
+                            'rating' => get_field('rating', $trek->ID)
+                        );
+                        
+                        $trek_locations[] = $trek_data;
+                        break; // Use only the first location with coordinates
+                    }
+                }
+            }
+        }
+        
+        wp_send_json_success($trek_locations);
+    }
+
+    // AJAX handler for getting all tour and trek locations
+    add_action('wp_ajax_get_all_locations', 'get_all_locations_ajax');
+    add_action('wp_ajax_nopriv_get_all_locations', 'get_all_locations_ajax');
+
+    function get_all_locations_ajax() {
+        $all_locations = array();
+        
+        // Query all published trekking posts
+        $treks = get_posts(array(
+            'post_type' => 'trekking',
+            'post_status' => 'publish',
+            'numberposts' => -1,
+            'meta_query' => array(
+                'relation' => 'AND',
+                array(
+                    'key' => 'itinerary',
+                    'compare' => 'EXISTS'
+                )
+            )
+        ));
+        
+        foreach ($treks as $trek) {
+            $itinerary = get_field('itinerary', $trek->ID);
+            
+            if ($itinerary && is_array($itinerary)) {
+                // Get the first day with coordinates as the main location
+                foreach ($itinerary as $day) {
+                    $coordinates = isset($day['coordinates']) ? $day['coordinates'] : null;
+                    
+                    if ($coordinates && isset($coordinates['latitude']) && isset($coordinates['longitude']) && 
+                        !empty($coordinates['latitude']) && !empty($coordinates['longitude'])) {
+                        
+                        $trek_data = array(
+                            'id' => $trek->ID,
+                            'title' => get_the_title($trek->ID),
+                            'url' => get_permalink($trek->ID),
+                            'type' => 'trekking',
+                            'latitude' => floatval($coordinates['latitude']),
+                            'longitude' => floatval($coordinates['longitude']),
+                            'duration' => get_field('duration', $trek->ID),
+                            'difficulty' => get_field('difficulty', $trek->ID),
+                            'max_altitude' => get_field('max_altitude', $trek->ID),
+                            'rating' => get_field('rating', $trek->ID),
+                            'overview' => wp_trim_words(get_field('overview', $trek->ID), 20),
+                            'thumbnail' => get_the_post_thumbnail_url($trek->ID, 'medium')
+                        );
+                        
+                        $all_locations[] = $trek_data;
+                        break; // Use only the first location with coordinates
+                    }
+                }
+            }
+        }
+        
+        // Query all published tour posts
+        $tours = get_posts(array(
+            'post_type' => 'tours',
+            'post_status' => 'publish',
+            'numberposts' => -1,
+            'meta_query' => array(
+                'relation' => 'AND',
+                array(
+                    'key' => 'itinerary',
+                    'compare' => 'EXISTS'
+                )
+            )
+        ));
+        
+        foreach ($tours as $tour) {
+            $itinerary = get_field('itinerary', $tour->ID);
+            
+            if ($itinerary && is_array($itinerary)) {
+                // Get the first day with coordinates as the main location
+                foreach ($itinerary as $day) {
+                    $coordinates = isset($day['coordinates']) ? $day['coordinates'] : null;
+                    
+                    if ($coordinates && isset($coordinates['latitude']) && isset($coordinates['longitude']) && 
+                        !empty($coordinates['latitude']) && !empty($coordinates['longitude'])) {
+                        
+                        $tour_data = array(
+                            'id' => $tour->ID,
+                            'title' => get_the_title($tour->ID),
+                            'url' => get_permalink($tour->ID),
+                            'type' => 'tours',
+                            'latitude' => floatval($coordinates['latitude']),
+                            'longitude' => floatval($coordinates['longitude']),
+                            'duration' => get_field('duration', $tour->ID),
+                            'tour_type' => get_field('tour_type', $tour->ID),
+                            'cost' => get_field('cost', $tour->ID),
+                            'rating' => get_field('rating', $tour->ID),
+                            'overview' => wp_trim_words(get_field('overview', $tour->ID), 20),
+                            'thumbnail' => get_the_post_thumbnail_url($tour->ID, 'medium')
+                        );
+                        
+                        $all_locations[] = $tour_data;
+                        break; // Use only the first location with coordinates
+                    }
+                }
+            }
+        }
+        
+        wp_send_json_success($all_locations);
+    }
+
     if (is_singular() && comments_open() && get_option('thread_comments')) {
         wp_enqueue_script('comment-reply');
     }
@@ -247,6 +675,7 @@ require_once TZNEW_INC_DIR . '/theme-settings.php';
 require_once TZNEW_INC_DIR . '/theme-functions.php';
 require_once TZNEW_INC_DIR . '/rest-api.php';
 require_once TZNEW_INC_DIR . '/customizer.php';
+require_once TZNEW_INC_DIR . '/customizer-colors.php';
 require_once TZNEW_INC_DIR . '/theme-settings-notice.php';
 
 // Include WooCommerce support if WooCommerce is active

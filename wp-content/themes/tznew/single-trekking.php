@@ -25,133 +25,79 @@ if ( function_exists( 'tznew_elementor_location_exists' ) && tznew_elementor_loc
 		?>
 		
 		<!-- Hero Section -->
-		<section class="relative h-96 md:h-[500px] overflow-hidden">
+		<section class="relative h-screen min-h-[700px] overflow-hidden">
 			<?php if (has_post_thumbnail()) : ?>
 				<div class="absolute inset-0">
-					<?php the_post_thumbnail('full', array('class' => 'w-full h-full object-cover')); ?>
-					<div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
+					<?php the_post_thumbnail('full', array('class' => 'w-full h-full object-cover scale-105 hover:scale-100 transition-transform duration-[3s]')); ?>
 				</div>
+				<div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/20"></div>
+				<div class="absolute inset-0 bg-gradient-to-r from-blue-900/30 to-transparent"></div>
 			<?php else : ?>
-				<div class="absolute inset-0 bg-gradient-to-br from-blue-600 to-blue-800"></div>
+				<div class="absolute inset-0 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800"></div>
 			<?php endif; ?>
 			
-			<div class="relative z-10 container mx-auto px-4 h-full flex items-end pb-12">
-				<div class="text-white max-w-4xl">
-					<div class="flex items-center gap-2 mb-4">
+			<!-- Floating Elements -->
+			<div class="absolute top-20 right-10 w-32 h-32 bg-white/10 rounded-full blur-xl animate-pulse"></div>
+			<div class="absolute bottom-40 left-20 w-20 h-20 bg-blue-400/20 rounded-full blur-lg animate-bounce"></div>
+			
+			<div class="relative z-10 container mx-auto px-4 h-full flex items-center">
+				<div class="text-white max-w-5xl">
+					<div class="flex items-center gap-2 mb-6">
 						<?php
 						$regions = get_the_terms(get_the_ID(), 'region');
 						if ($regions && !is_wp_error($regions)) :
 							foreach ($regions as $region) :
 						?>
-							<span class="bg-blue-600/80 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium">
-								<i class="fas fa-location-dot mr-1"></i>
-								<?php echo esc_html($region->name); ?>
-							</span>
+							<div class="inline-flex items-center bg-gradient-to-r from-blue-600/90 to-indigo-600/90 backdrop-blur-md px-6 py-3 rounded-full border border-white/20 shadow-lg">
+								<i class="fas fa-location-dot mr-3 text-blue-200"></i>
+								<span class="font-semibold text-lg"><?php echo esc_html($region->name); ?></span>
+							</div>
 						<?php
 							endforeach;
 						endif;
 						?>
 					</div>
-					<h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 leading-tight">
+					<h1 class="text-4xl md:text-6xl lg:text-7xl font-black mb-8 leading-tight bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent drop-shadow-2xl">
 						<?php the_title(); ?>
 					</h1>
 					<?php
 					$overview = tznew_get_field_safe('overview');
 					if ($overview) :
 					?>
-						<p class="text-xl md:text-2xl text-gray-200 leading-relaxed max-w-3xl">
-							<?php echo wp_trim_words(wp_strip_all_tags($overview), 30, '...'); ?>
+						<p class="text-xl md:text-2xl text-blue-50 leading-relaxed max-w-4xl mb-8 font-light">
+							<?php echo wp_trim_words(wp_strip_all_tags($overview), 35, '...'); ?>
 						</p>
 					<?php endif; ?>
+					
+					<!-- Quick Action Buttons -->
+					<div class="flex flex-col sm:flex-row gap-4 mt-8">
+						<a href="<?php echo esc_url(home_url('/booking?trekking_id=' . get_the_ID())); ?>" class="inline-flex items-center justify-center bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl group">
+							<i class="fas fa-mountain mr-3 group-hover:animate-bounce"></i>
+							<span class="text-lg">Book This Trek</span>
+						</a>
+						<a href="#main-content" class="inline-flex items-center justify-center bg-white/20 backdrop-blur-md hover:bg-white/30 text-white font-semibold py-4 px-8 rounded-2xl border border-white/30 transition-all duration-300 group">
+							<i class="fas fa-info-circle mr-3 group-hover:rotate-12 transition-transform"></i>
+							<span class="text-lg">View Details</span>
+						</a>
+					</div>
 				</div>
 			</div>
-		</section>
-
-		<!-- Trek Meta Information -->
-		<section class="bg-white shadow-lg relative z-20 -mt-16 mx-4 md:mx-8 rounded-2xl overflow-hidden">
-			<div class="container mx-auto px-6 py-8">
-				<?php
-				$duration = tznew_get_field_safe('duration');
-				$difficulty = tznew_get_field_safe('difficulty');
-				$max_altitude = tznew_get_field_safe('max_altitude');
-				$best_season = tznew_get_field_safe('best_season');
-				$group_size = tznew_get_field_safe('group_size');
-				$cost_info = tznew_get_field_safe('cost_info');
-				
-				if ($duration || $difficulty || $max_altitude || $best_season || $group_size) :
-				?>
-					<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-						<?php if ($duration) : ?>
-							<div class="text-center group">
-								<div class="w-16 h-16 mx-auto mb-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center text-white text-2xl group-hover:scale-110 transition-transform duration-300">
-									<i class="fas fa-clock"></i>
-								</div>
-								<h3 class="font-semibold text-gray-800 mb-1"><?php esc_html_e('Duration', 'tznew'); ?></h3>
-								<p class="text-2xl font-bold text-blue-600"><?php echo esc_html($duration); ?></p>
-								<p class="text-sm text-gray-600"><?php echo esc_html(_n('Day', 'Days', intval($duration), 'tznew')); ?></p>
-							</div>
-						<?php endif; ?>
-						
-						<?php if ($difficulty) : ?>
-							<div class="text-center group">
-								<div class="w-16 h-16 mx-auto mb-3 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl flex items-center justify-center text-white text-2xl group-hover:scale-110 transition-transform duration-300">
-									<i class="fas fa-mountain"></i>
-								</div>
-								<h3 class="font-semibold text-gray-800 mb-1"><?php esc_html_e('Difficulty', 'tznew'); ?></h3>
-								<p class="text-lg font-bold text-orange-600"><?php echo esc_html(ucfirst($difficulty)); ?></p>
-							</div>
-						<?php endif; ?>
-						
-						<?php if ($max_altitude) : ?>
-							<div class="text-center group">
-								<div class="w-16 h-16 mx-auto mb-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center text-white text-2xl group-hover:scale-110 transition-transform duration-300">
-									<i class="fas fa-arrow-up"></i>
-								</div>
-								<h3 class="font-semibold text-gray-800 mb-1"><?php esc_html_e('Max Altitude', 'tznew'); ?></h3>
-								<p class="text-lg font-bold text-green-600"><?php echo esc_html(number_format($max_altitude)); ?></p>
-								<p class="text-sm text-gray-600"><?php esc_html_e('meters', 'tznew'); ?></p>
-							</div>
-						<?php endif; ?>
-						
-						<?php if ($best_season) : ?>
-							<div class="text-center group">
-								<div class="w-16 h-16 mx-auto mb-3 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center text-white text-2xl group-hover:scale-110 transition-transform duration-300">
-									<i class="fas fa-calendar-days"></i>
-								</div>
-								<h3 class="font-semibold text-gray-800 mb-1"><?php esc_html_e('Best Season', 'tznew'); ?></h3>
-								<p class="text-lg font-bold text-purple-600"><?php echo esc_html($best_season); ?></p>
-							</div>
-						<?php endif; ?>
-						
-						<?php if ($group_size) : ?>
-							<div class="text-center group">
-								<div class="w-16 h-16 mx-auto mb-3 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-2xl flex items-center justify-center text-white text-2xl group-hover:scale-110 transition-transform duration-300">
-									<i class="fas fa-users"></i>
-								</div>
-								<h3 class="font-semibold text-gray-800 mb-1"><?php esc_html_e('Group Size', 'tznew'); ?></h3>
-								<p class="text-lg font-bold text-indigo-600"><?php echo esc_html($group_size); ?></p>
-							</div>
-						<?php endif; ?>
-						
-						<?php if ($cost_info && isset($cost_info['price_usd']) && $cost_info['price_usd']) : ?>
-							<div class="text-center group">
-								<div class="w-16 h-16 mx-auto mb-3 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-2xl flex items-center justify-center text-white text-2xl group-hover:scale-110 transition-transform duration-300">
-									<i class="fas fa-dollar-sign"></i>
-								</div>
-								<h3 class="font-semibold text-gray-800 mb-1"><?php esc_html_e('Price', 'tznew'); ?></h3>
-								<p class="text-2xl font-bold text-yellow-600">$<?php echo esc_html(number_format($cost_info['price_usd'])); ?></p>
-								<?php if (isset($cost_info['pricing_type']) && $cost_info['pricing_type']) : ?>
-									<p class="text-sm text-gray-600"><?php echo esc_html($cost_info['pricing_type']); ?></p>
-								<?php endif; ?>
-							</div>
-						<?php endif; ?>
-					</div>
-				<?php endif; ?>
+			
+			<!-- Scroll Indicator -->
+			<div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-white animate-bounce">
+				<i class="fas fa-chevron-down text-2xl opacity-70"></i>
 			</div>
 		</section>
 
+
+
 		<!-- Main Content -->
-		<div class="container mx-auto px-4 py-12">
+		<div id="main-content" class="container mx-auto px-4 py-12">
+			<?php
+			// Get trek data for sidebar
+			$cost_info = tznew_get_field_safe('cost_info');
+			$difficulty = tznew_get_field_safe('difficulty');
+			?>
 			<div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
 				<!-- Main Content Column -->
 				<div class="lg:col-span-2 space-y-12">
@@ -162,48 +108,69 @@ if ( function_exists( 'tznew_elementor_location_exists' ) && tznew_elementor_loc
 				<div class="lg:col-span-1">
 					<div class="sticky top-8 space-y-8">
 						<!-- Quick Booking Card -->
-						<div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
-							<h3 class="text-xl font-bold text-blue-800 mb-4 flex items-center">
-								<i class="fas fa-calendar-check mr-2"></i>
-								<?php esc_html_e('Book This Trek', 'tznew'); ?>
-							</h3>
+						<div class="bg-gradient-to-br from-white via-blue-50 to-indigo-100 rounded-3xl p-8 border border-blue-200/50 shadow-2xl backdrop-blur-sm">
+							<div class="text-center mb-6">
+								<div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl flex items-center justify-center text-white text-2xl shadow-lg">
+									<i class="fas fa-mountain"></i>
+								</div>
+								<h3 class="text-2xl font-black text-gray-800 mb-2">
+									<?php esc_html_e('Book This Trek', 'tznew'); ?>
+								</h3>
+								<p class="text-gray-600"><?php esc_html_e('Secure your adventure today', 'tznew'); ?></p>
+							</div>
 							
 							<?php if ($cost_info && isset($cost_info['price_usd']) && $cost_info['price_usd']) : ?>
-								<div class="mb-4">
-									<span class="text-sm text-gray-600"><?php esc_html_e('Starting from', 'tznew'); ?></span>
-									<div class="text-3xl font-bold text-blue-600">$<?php echo esc_html(number_format($cost_info['price_usd'])); ?></div>
-									<?php if (isset($cost_info['pricing_type']) && $cost_info['pricing_type']) : ?>
-										<span class="text-sm text-gray-600"><?php echo esc_html($cost_info['pricing_type']); ?></span>
-									<?php endif; ?>
+								<div class="bg-white/70 rounded-2xl p-6 mb-6 border border-blue-100">
+									<div class="text-center">
+										<span class="text-sm font-medium text-gray-600 uppercase tracking-wide"><?php esc_html_e('Starting from', 'tznew'); ?></span>
+										<div class="text-4xl font-black text-blue-600 my-2">$<?php echo esc_html(number_format($cost_info['price_usd'])); ?></div>
+										<?php if (isset($cost_info['pricing_type']) && $cost_info['pricing_type']) : ?>
+											<span class="text-sm text-gray-600 font-medium"><?php echo esc_html($cost_info['pricing_type']); ?></span>
+										<?php endif; ?>
+									</div>
 								</div>
 							<?php endif; ?>
 							
-							<div class="space-y-3">
-								<a href="<?php echo esc_url(home_url('/booking?trekking_id=' . get_the_ID())); ?>" class="block w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 text-center">
-									<i class="fas fa-paper-plane mr-2"></i>
-									<?php esc_html_e('Book Now', 'tznew'); ?>
+							<div class="space-y-4">
+								<a href="<?php echo esc_url(home_url('/booking?trekking_id=' . get_the_ID())); ?>" class="block w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl text-center group">
+									<i class="fas fa-calendar-check mr-3 group-hover:animate-pulse"></i>
+									<span class="text-lg"><?php esc_html_e('Book Now', 'tznew'); ?></span>
 								</a>
-								<a href="<?php echo esc_url(home_url('/inquiry?trekking_id=' . get_the_ID())); ?>" class="block w-full bg-white hover:bg-gray-50 text-blue-600 font-bold py-3 px-6 rounded-xl border-2 border-blue-600 transition-all duration-300 text-center">
-									<i class="fas fa-question-circle mr-2"></i>
-									<?php esc_html_e('Send Inquiry', 'tznew'); ?>
+								<a href="<?php echo esc_url(home_url('/inquiry?trekking_id=' . get_the_ID())); ?>" class="block w-full bg-white/80 hover:bg-white text-blue-600 font-bold py-4 px-8 rounded-2xl border-2 border-blue-600 transition-all duration-300 hover:shadow-xl text-center group">
+									<i class="fas fa-envelope mr-3 group-hover:animate-bounce"></i>
+									<span class="text-lg"><?php esc_html_e('Send Inquiry', 'tznew'); ?></span>
+								</a>
+								<button type="button" class="block w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300 hover:shadow-xl text-center group download-itinerary-btn" data-post-id="<?php echo get_the_ID(); ?>">
+									<i class="fas fa-download mr-3 group-hover:animate-bounce"></i>
+									<span class="text-lg"><?php esc_html_e('Download Itinerary', 'tznew'); ?></span>
+								</button>
+								<a href="tel:+977-1-4444444" class="block w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300 hover:shadow-xl text-center group">
+									<i class="fas fa-phone mr-3 group-hover:animate-pulse"></i>
+									<span class="text-lg"><?php esc_html_e('Call Now', 'tznew'); ?></span>
 								</a>
 							</div>
 						</div>
 						
 						<!-- Trek Highlights -->
 						<?php if (tznew_have_rows_safe('highlights')) : ?>
-							<div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
-								<h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-									<i class="fas fa-star text-yellow-500 mr-2"></i>
-									<?php esc_html_e('Trek Highlights', 'tznew'); ?>
-								</h3>
-								<ul class="space-y-2">
+							<div class="bg-gradient-to-br from-white to-yellow-50 rounded-3xl p-8 shadow-2xl border border-yellow-200/50">
+								<div class="text-center mb-6">
+									<div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-2xl flex items-center justify-center text-white text-2xl shadow-lg">
+										<i class="fas fa-star"></i>
+									</div>
+									<h3 class="text-2xl font-black text-gray-800">
+										<?php esc_html_e('Trek Highlights', 'tznew'); ?>
+									</h3>
+								</div>
+								<ul class="space-y-4">
 									<?php while (tznew_have_rows_safe('highlights')) : tznew_the_row_safe(); ?>
 										<?php $highlight = tznew_get_sub_field_safe('highlight'); ?>
 										<?php if ($highlight) : ?>
-											<li class="flex items-start text-gray-700">
-												<i class="fas fa-circle-check text-green-500 mr-2 mt-1 flex-shrink-0"></i>
-												<span class="text-sm"><?php echo wp_kses_post(is_string($highlight) ? $highlight : ''); ?></span>
+											<li class="flex items-start bg-white/60 rounded-xl p-4 hover:bg-white/80 transition-all duration-300 group">
+												<div class="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center mr-4 flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
+													<i class="fas fa-check text-white text-sm"></i>
+												</div>
+												<span class="text-gray-700 font-medium leading-relaxed"><?php echo wp_kses_post(is_string($highlight) ? $highlight : ''); ?></span>
 											</li>
 										<?php endif; ?>
 									<?php endwhile; ?>
@@ -293,6 +260,60 @@ if ( function_exists( 'tznew_elementor_location_exists' ) && tznew_elementor_loc
     <?php
 }
 ?>
+
+<script>
+jQuery(document).ready(function($) {
+    // Handle PDF download button click
+    $('.download-itinerary-btn').on('click', function(e) {
+        e.preventDefault();
+        
+        var button = $(this);
+        var postId = button.data('post-id');
+        var originalText = button.find('span').text();
+        
+        // Show loading state
+        button.prop('disabled', true);
+        button.find('i').removeClass('fa-download').addClass('fa-spinner fa-spin');
+        button.find('span').text('<?php esc_html_e('Generating PDF...', 'tznew'); ?>');
+        
+        // Make AJAX request
+        $.ajax({
+            url: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
+            type: 'POST',
+            data: {
+                action: 'generate_pdf_itinerary',
+                post_id: postId,
+                post_type: 'trekking',
+                nonce: '<?php echo wp_create_nonce('pdf_itinerary_nonce'); ?>'
+            },
+            success: function(response) {
+                console.log('PDF AJAX Response:', response);
+                if (response.success && response.data && response.data.html) {
+                    // Open HTML content in new window for printing/saving as PDF
+                    var newWindow = window.open('', '_blank');
+                    newWindow.document.write(response.data.html);
+                    newWindow.document.close();
+                } else {
+                    console.error('PDF Generation Failed:', response);
+                    alert('Error generating PDF. Please try again. Check console for details.');
+                }
+                
+                // Reset button
+                button.prop('disabled', false);
+                button.find('i').removeClass('fa-spinner fa-spin').addClass('fa-download');
+                button.find('span').text(originalText);
+            },
+            error: function(xhr, status, error) {
+                console.error('PDF AJAX Error:', xhr, status, error);
+                alert('Error generating PDF. Please try again. Check console for details.');
+                button.prop('disabled', false);
+                button.find('i').removeClass('fa-spinner fa-spin').addClass('fa-download');
+                button.find('span').text(originalText);
+            }
+        });
+    });
+});
+</script>
 
 <?php
 get_footer();

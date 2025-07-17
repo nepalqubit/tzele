@@ -230,10 +230,10 @@ if (!defined('ABSPATH')) {
                             if ($altitude && $previous_altitude !== null) {
                                 $elevation_change = intval($altitude) - intval($previous_altitude);
                                 if ($elevation_change > 0) {
-                                    $elevation_change_class = 'text-green-600';
+                                    $elevation_change_class = 'text-red-600';
                                     $elevation_change_icon = 'fas fa-arrow-up';
                                 } elseif ($elevation_change < 0) {
-                                    $elevation_change_class = 'text-red-600';
+                                    $elevation_change_class = 'text-green-600';
                                     $elevation_change_icon = 'fas fa-arrow-down';
                                 } else {
                                     $elevation_change_class = 'text-gray-600';
@@ -523,151 +523,198 @@ if (!defined('ABSPATH')) {
             <?php endif; ?>
             
             <?php
-            // Elevation Profile section removed for tours post type
-            ?>
-                
-                // Route Map section
-                // Collect route coordinates for map
-                $route_coordinates = array();
-                if (tznew_have_rows_safe('itinerary')) {
-                    $map_day_count = 1;
-                    while (tznew_have_rows_safe('itinerary')) {
-                        tznew_the_row_safe();
-                        $coordinates = tznew_get_sub_field_safe('coordinates');
-                        $day_title = tznew_get_sub_field_safe('title');
-                        $place_name = tznew_get_sub_field_safe('place_name');
-                        $altitude = tznew_get_sub_field_safe('altitude');
-                        $transportation = tznew_get_sub_field_safe('transportation');
-                        
-                        if ($coordinates && isset($coordinates['latitude']) && isset($coordinates['longitude'])) {
-                            $route_coordinates[] = array(
-                                'day' => $map_day_count,
-                                'lat' => floatval($coordinates['latitude']),
-                                'lng' => floatval($coordinates['longitude']),
-                                'title' => $day_title,
-                                'place_name' => $place_name,
-                                'altitude' => $altitude,
-                                'transportation' => $transportation
-                            );
-                        }
-                        $map_day_count++;
-                    }
+            // Route Map section with automatic location integration
+            // Collect route coordinates for map
+            $route_coordinates = array();
+            if (tznew_have_rows_safe('itinerary')) {
+                $map_day_count = 1;
+                while (tznew_have_rows_safe('itinerary')) {
+                    tznew_the_row_safe();
+                    $coordinates = tznew_get_sub_field_safe('coordinates');
+                    $day_title = tznew_get_sub_field_safe('title');
+                    $place_name = tznew_get_sub_field_safe('place_name');
+                    $altitude = tznew_get_sub_field_safe('altitude');
+                    $transportation = tznew_get_sub_field_safe('transportation');
                     
-                    // Reset the loop
-                    if (function_exists('reset_rows')) {
-                        reset_rows();
+                    // Auto-populate coordinates if place name exists but coordinates are missing
+                    if ($place_name && (!$coordinates || empty($coordinates['latitude']) || empty($coordinates['longitude']))) {
+                        // Store place name for automatic geocoding on frontend
+                        $route_coordinates[] = array(
+                            'day' => $map_day_count,
+                            'lat' => null,
+                            'lng' => null,
+                            'title' => $day_title,
+                            'place_name' => $place_name,
+                            'altitude' => $altitude,
+                            'transportation' => $transportation,
+                            'needs_geocoding' => true
+                        );
+                    } elseif ($coordinates && isset($coordinates['latitude']) && isset($coordinates['longitude'])) {
+                        $route_coordinates[] = array(
+                            'day' => $map_day_count,
+                            'lat' => floatval($coordinates['latitude']),
+                            'lng' => floatval($coordinates['longitude']),
+                            'title' => $day_title,
+                            'place_name' => $place_name,
+                            'altitude' => $altitude,
+                            'transportation' => $transportation,
+                            'needs_geocoding' => false
+                        );
                     }
+                    $map_day_count++;
                 }
                 
-                if (!empty($route_coordinates)) :
+                // Reset the loop
+                if (function_exists('reset_rows')) {
+                    reset_rows();
+                }
+            }
+            
+            // Display route map if coordinates are available
+            if (!empty($route_coordinates)) :
             ?>
-                <div class="route-map mb-8 bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-300">
-                    <h2 class="text-2xl font-bold mb-4 text-green-700 border-b border-green-200 pb-3 flex items-center">
+                <div class="tour-route-map mb-8 bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-300">
+                    <h2 class="text-2xl font-bold mb-6 text-green-700 border-b border-green-200 pb-3 flex items-center">
                         <i class="fas fa-map mr-2 text-green-600" aria-hidden="true"></i>
                         <?php esc_html_e('Route Map', 'tznew'); ?>
                     </h2>
-                    <div class="route-map-container">
-                         <div id="tourRouteMap" style="height: 400px; width: 100%; border-radius: 8px;"></div>
-                     </div>
+                    <div id="tour-route-map" style="height: 500px; border-radius: 8px; overflow: hidden;"></div>
                 </div>
                 
                 <script>
                 document.addEventListener('DOMContentLoaded', function() {
-                    // Initialize the map
-                    const routeCoordinates = <?php echo json_encode($route_coordinates); ?>;
+                    // Route coordinates with automatic geocoding support
+                    const routeCoordinates = <?php echo wp_json_encode($route_coordinates); ?>;
                     
-                    if (routeCoordinates.length > 0) {
-                        // Calculate center point
-                        const centerLat = routeCoordinates.reduce((sum, coord) => sum + coord.lat, 0) / routeCoordinates.length;
-                        const centerLng = routeCoordinates.reduce((sum, coord) => sum + coord.lng, 0) / routeCoordinates.length;
+                    // Function to geocode place names automatically
+                    async function geocodeLocation(placeName, country = 'Nepal') {
+                        try {
+                            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(placeName + ', ' + country)}&limit=1`);
+                            const data = await response.json();
+                            if (data && data.length > 0) {
+                                return {
+                                    lat: parseFloat(data[0].lat),
+                                    lng: parseFloat(data[0].lon)
+                                };
+                            }
+                        } catch (error) {
+                            console.warn('Geocoding failed for:', placeName, error);
+                        }
+                        return null;
+                    }
+                    
+                    // Function to initialize map with automatic location integration
+                    async function initializeInteractiveMap() {
+                        // Process coordinates and geocode missing ones
+                        const processedCoordinates = [];
                         
-                        const map = L.map('tourRouteMap').setView([centerLat, centerLng], 10);
+                        for (const coord of routeCoordinates) {
+                            if (coord.needs_geocoding && coord.place_name) {
+                                console.log('Auto-geocoding location:', coord.place_name);
+                                const geocoded = await geocodeLocation(coord.place_name);
+                                if (geocoded) {
+                                    processedCoordinates.push({
+                                        ...coord,
+                                        lat: geocoded.lat,
+                                        lng: geocoded.lng,
+                                        auto_geocoded: true
+                                    });
+                                } else {
+                                    console.warn('Could not geocode:', coord.place_name);
+                                }
+                            } else if (coord.lat && coord.lng) {
+                                processedCoordinates.push({
+                                    ...coord,
+                                    auto_geocoded: false
+                                });
+                            }
+                        }
                         
-                        // Add OpenStreetMap tiles
+                        if (processedCoordinates.length === 0) {
+                            console.warn('No valid coordinates found for map initialization');
+                            return;
+                        }
+                        
+                        // Initialize map with first valid coordinate
+                        const firstCoord = processedCoordinates[0];
+                        const map = L.map('tour-route-map').setView([firstCoord.lat, firstCoord.lng], 10);
+                        
+                        // Add tile layer
                         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                             attribution: '© OpenStreetMap contributors',
                             maxZoom: 18
                         }).addTo(map);
-                        
-                        // Create route line coordinates
-                        const routeLineCoords = routeCoordinates.map(coord => [coord.lat, coord.lng]);
-                        
-                        // Add route line segments with transportation icons
+                    
+                        // Create route segments with processed coordinates
                         const routeSegments = [];
-                        for (let i = 0; i < routeLineCoords.length - 1; i++) {
-                            const startCoord = routeLineCoords[i];
-                            const endCoord = routeLineCoords[i + 1];
-                            const segmentCoords = [startCoord, endCoord];
+                        for (let i = 0; i < processedCoordinates.length - 1; i++) {
+                            const startCoord = [processedCoordinates[i].lat, processedCoordinates[i].lng];
+                            const endCoord = [processedCoordinates[i + 1].lat, processedCoordinates[i + 1].lng];
                             
-                            // Get transportation method for this segment
-                            const nextDayTransport = routeCoordinates[i + 1].transportation;
-                            
-                            // Create segment line
-                            const segment = L.polyline(segmentCoords, {
+                            const segment = L.polyline([startCoord, endCoord], {
                                 color: '#059669',
                                 weight: 4,
-                                opacity: 0.8,
-                                smoothFactor: 1
+                                opacity: 0.8
                             }).addTo(map);
                             
                             routeSegments.push(segment);
                             
-                            // Add transportation icon on the line segment
-                            if (nextDayTransport) {
-                                const transportIcons = {
-                                    'walking': 'fa-walking',
-                                    'bus': 'fa-bus',
-                                    'car': 'fa-car',
-                                    'jeep': 'fa-truck',
-                                    'van': 'fa-shuttle-van',
-                                    'motorbike': 'fa-motorcycle',
-                                    'flight': 'fa-plane',
-                                    'helicopter': 'fa-helicopter',
-                                    'rest_day': 'fa-bed',
-                                    'acclimatization': 'fa-mountain'
-                                };
-                                
-                                const transportIcon = transportIcons[nextDayTransport] || 'fa-route';
-                                
-                                // Calculate midpoint of the segment
-                                const midLat = (startCoord[0] + endCoord[0]) / 2;
-                                const midLng = (startCoord[1] + endCoord[1]) / 2;
-                                
-                                // Create transportation icon marker
-                                const transportMarker = L.divIcon({
-                                    html: `<div style="background-color: #ffffff; border: 2px solid #059669; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"><i class="fas ${transportIcon}" style="color: #059669; font-size: 12px;"></i></div>`,
-                                    className: 'transport-icon-marker',
-                                    iconSize: [24, 24],
-                                    iconAnchor: [12, 12]
-                                });
-                                
-                                L.marker([midLat, midLng], { icon: transportMarker })
-                                    .addTo(map)
-                                    .bindTooltip(`Transportation: ${nextDayTransport.charAt(0).toUpperCase() + nextDayTransport.slice(1)}`, {
-                                        permanent: false,
-                                        direction: 'top',
-                                        className: 'transport-tooltip'
+                            // Add transportation icons between segments
+                            if (i < processedCoordinates.length - 1) {
+                                const nextDayTransport = processedCoordinates[i + 1].transportation;
+                                if (nextDayTransport) {
+                                    // Transportation icon mapping
+                                    const transportIcons = {
+                                        'walking': 'fa-walking',
+                                        'bus': 'fa-bus',
+                                        'car': 'fa-car',
+                                        'jeep': 'fa-truck',
+                                        'van': 'fa-shuttle-van',
+                                        'motorbike': 'fa-motorcycle',
+                                        'flight': 'fa-plane',
+                                        'helicopter': 'fa-helicopter',
+                                        'rest_day': 'fa-bed',
+                                        'acclimatization': 'fa-mountain'
+                                    };
+                                    
+                                    const transportIcon = transportIcons[nextDayTransport] || 'fa-route';
+                                    
+                                    // Calculate midpoint of the segment
+                                    const midLat = (startCoord[0] + endCoord[0]) / 2;
+                                    const midLng = (startCoord[1] + endCoord[1]) / 2;
+                                    
+                                    // Create transportation icon marker
+                                    const transportMarker = L.divIcon({
+                                        html: `<div style="background-color: #ffffff; border: 2px solid #059669; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"><i class="fas ${transportIcon}" style="color: #059669; font-size: 12px;"></i></div>`,
+                                        className: 'transport-icon-marker',
+                                        iconSize: [24, 24],
+                                        iconAnchor: [12, 12]
                                     });
+                                    
+                                    L.marker([midLat, midLng], { icon: transportMarker })
+                                        .addTo(map)
+                                        .bindTooltip(`Transportation: ${nextDayTransport.charAt(0).toUpperCase() + nextDayTransport.slice(1)}`, {
+                                            permanent: false,
+                                            direction: 'top',
+                                            className: 'transport-tooltip'
+                                        });
+                                }
                             }
-                        }
                         
                         // Create a feature group for fitting bounds
                         const allSegments = L.featureGroup(routeSegments);
                         
-                        // Add markers for each day
-                        routeCoordinates.forEach((coord, index) => {
+                        // Add markers for each day with processed coordinates
+                        processedCoordinates.forEach((coord, index) => {
                             const isStart = index === 0;
-                            const isEnd = index === routeCoordinates.length - 1;
+                            const isEnd = index === processedCoordinates.length - 1;
                             
                             let markerColor = '#3B82F6'; // Default blue
-                            let iconClass = 'fa-location-dot';
                             
                             if (isStart) {
                                 markerColor = '#10B981'; // Green for start
-                                iconClass = 'fa-play';
                             } else if (isEnd) {
                                 markerColor = '#EF4444'; // Red for end
-                                iconClass = 'fa-flag-checkered';
                             }
                             
                             const customIcon = L.divIcon({
@@ -693,15 +740,19 @@ if (!defined('ABSPATH')) {
                             
                             const transportIcon = coord.transportation && transportIcons[coord.transportation] ? transportIcons[coord.transportation] : 'fa-route';
                             
-                            const popupContent = `
+                            let popupContent = `
                                 <div class="map-popup">
                                     <h4 style="margin: 0 0 8px 0; font-weight: bold; color: #1F2937;">Day ${coord.day}: ${coord.title || 'Untitled'}</h4>
                                     ${coord.place_name ? `<p style="margin: 0 0 4px 0; color: #6B7280;"><i class="fas fa-location-dot" style="margin-right: 4px;"></i>${coord.place_name}</p>` : ''}
                                     ${coord.transportation ? `<p style="margin: 0 0 4px 0; color: #6366F1;"><i class="fas ${transportIcon}" style="margin-right: 4px;"></i>Transportation: ${coord.transportation.charAt(0).toUpperCase() + coord.transportation.slice(1)}</p>` : ''}
                                     ${coord.altitude ? `<p style="margin: 0 0 4px 0; color: #6B7280;"><i class="fas fa-mountain" style="margin-right: 4px;"></i>Altitude: ${Number(coord.altitude).toLocaleString()}m</p>` : ''}
-                                    <p style="margin: 0; color: #6B7280; font-size: 12px;"><i class="fas fa-crosshairs" style="margin-right: 4px;"></i>${coord.lat.toFixed(6)}, ${coord.lng.toFixed(6)}</p>
-                                </div>
                             `;
+                            
+                            if (coord.auto_geocoded) {
+                                popupContent += `<p style="margin: 0 0 4px 0; color: #10B981;"><i class="fas fa-map-marker-alt" style="margin-right: 4px;"></i><em>Location auto-detected</em></p>`;
+                            }
+                            
+                            popupContent += `<p style="margin: 0; color: #6B7280; font-size: 12px;"><i class="fas fa-crosshairs" style="margin-right: 4px;"></i>${coord.lat.toFixed(6)}, ${coord.lng.toFixed(6)}</p></div>`;
                             
                             L.marker([coord.lat, coord.lng], { icon: customIcon })
                                 .addTo(map)
@@ -715,6 +766,9 @@ if (!defined('ABSPATH')) {
                         // Add map controls
                         L.control.scale().addTo(map);
                     }
+                    
+                    // Initialize the map when DOM is ready
+                    initializeInteractiveMap();
                 });
                 </script>
             <?php endif; ?>

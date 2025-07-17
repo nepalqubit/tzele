@@ -136,6 +136,26 @@ if ( function_exists( 'tznew_elementor_location_exists' ) && tznew_elementor_loc
 					</div>
 				</div>
 				
+				<!-- Featured/Popular Toggle -->
+				<div class="mb-6">
+					<div class="flex items-center justify-center">
+						<div class="bg-gray-100 rounded-xl p-1 flex">
+							<button type="button" id="all-treks-btn" class="trek-type-toggle active px-6 py-2 rounded-lg font-medium transition-all duration-300">
+								<i class="fas fa-list mr-2"></i>
+								<?php esc_html_e('All Treks', 'tznew'); ?>
+							</button>
+							<button type="button" id="featured-treks-btn" class="trek-type-toggle px-6 py-2 rounded-lg font-medium transition-all duration-300">
+								<i class="fas fa-star mr-2"></i>
+								<?php esc_html_e('Featured Treks', 'tznew'); ?>
+							</button>
+							<button type="button" id="popular-treks-btn" class="trek-type-toggle px-6 py-2 rounded-lg font-medium transition-all duration-300">
+								<i class="fas fa-fire mr-2"></i>
+								<?php esc_html_e('Popular Treks', 'tznew'); ?>
+							</button>
+						</div>
+					</div>
+				</div>
+
 				<div class="flex flex-col sm:flex-row gap-4 items-center justify-between">
 					<div class="flex gap-3">
 						<button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl transition-all duration-300 transform hover:scale-105 flex items-center">
@@ -380,6 +400,13 @@ if ( function_exists( 'tznew_elementor_location_exists' ) && tznew_elementor_loc
 	@apply text-blue-600;
 }
 
+.trek-type-toggle {
+	@apply text-gray-600 hover:text-blue-600;
+}
+.trek-type-toggle.active {
+	@apply bg-blue-600 text-white shadow-md;
+}
+
 .trek-card .stretched-link::after {
 	content: '';
 	position: absolute;
@@ -424,6 +451,38 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 		});
 	});
+	
+	// Trek type toggle functionality
+	const trekTypeToggles = document.querySelectorAll('.trek-type-toggle');
+	trekTypeToggles.forEach(toggle => {
+		toggle.addEventListener('click', function() {
+			const trekType = this.id.replace('-btn', '').replace('-', '_');
+			
+			// Update active state
+			trekTypeToggles.forEach(t => t.classList.remove('active'));
+			this.classList.add('active');
+			
+			// Redirect with trek type parameter
+			const url = new URL(window.location);
+			if (trekType === 'all_treks') {
+				url.searchParams.delete('trek_type');
+			} else {
+				url.searchParams.set('trek_type', trekType.replace('_treks', ''));
+			}
+			window.location.href = url.toString();
+		});
+	});
+	
+	// Set active state based on URL parameter
+	const urlParams = new URLSearchParams(window.location.search);
+	const trekType = urlParams.get('trek_type');
+	if (trekType === 'featured') {
+		document.getElementById('featured-treks-btn').classList.add('active');
+		document.getElementById('all-treks-btn').classList.remove('active');
+	} else if (trekType === 'popular') {
+		document.getElementById('popular-treks-btn').classList.add('active');
+		document.getElementById('all-treks-btn').classList.remove('active');
+	}
 	
 	// Auto-submit form on select change
 	const selects = document.querySelectorAll('#trekking-filter select');

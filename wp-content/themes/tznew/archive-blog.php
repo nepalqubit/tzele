@@ -249,8 +249,7 @@ if (!function_exists('tznew_get_reading_time')) {
 		return max(1, $reading_time);
 	}
 }
-    <?php
 }
 ?>
 
-get_footer();
+<?php get_footer();

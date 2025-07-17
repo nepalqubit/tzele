@@ -485,39 +485,55 @@ function tznew_filter_query($query) {
     $post_type = get_query_var('post_type');
     
     if (in_array($post_type, array('trekking', 'tours'))) {
+        // Initialize meta_query and tax_query arrays
+        $meta_query = array();
+        $tax_query = array();
+        
+        // Featured/Popular filter
+        if (isset($_GET['trek_type']) && !empty($_GET['trek_type'])) {
+            $trek_type = sanitize_text_field($_GET['trek_type']);
+            if ($trek_type === 'featured') {
+                $meta_query[] = array(
+                    'key' => 'featured',
+                    'value' => '1',
+                    'compare' => '='
+                );
+            } elseif ($trek_type === 'popular') {
+                $meta_query[] = array(
+                    'key' => 'popular',
+                    'value' => '1',
+                    'compare' => '='
+                );
+            }
+        }
+        
         // Region filter
         if (isset($_GET['region']) && !empty($_GET['region'])) {
-            $query->set('tax_query', array(
-                array(
-                    'taxonomy' => 'region',
-                    'field' => 'slug',
-                    'terms' => sanitize_text_field($_GET['region']),
-                ),
-            ));
+            $tax_query[] = array(
+                'taxonomy' => 'region',
+                'field' => 'slug',
+                'terms' => sanitize_text_field($_GET['region']),
+            );
         }
         
         // Post type specific filters
         if ($post_type === 'trekking') {
             // Difficulty filter
             if (isset($_GET['difficulty']) && !empty($_GET['difficulty'])) {
-                $query->set('tax_query', array(
-                    array(
-                        'taxonomy' => 'difficulty',
-                        'field' => 'slug',
-                        'terms' => sanitize_text_field($_GET['difficulty']),
-                    ),
-                ));
+                $tax_query[] = array(
+                    'taxonomy' => 'difficulty',
+                    'field' => 'slug',
+                    'terms' => sanitize_text_field($_GET['difficulty']),
+                );
             }
         } elseif ($post_type === 'tours') {
             // Tour Type filter
             if (isset($_GET['tour_type']) && !empty($_GET['tour_type'])) {
-                $query->set('tax_query', array(
-                    array(
-                        'taxonomy' => 'tour_type',
-                        'field' => 'slug',
-                        'terms' => sanitize_text_field($_GET['tour_type']),
-                    ),
-                ));
+                $tax_query[] = array(
+                    'taxonomy' => 'tour_type',
+                    'field' => 'slug',
+                    'terms' => sanitize_text_field($_GET['tour_type']),
+                );
             }
         }
         
@@ -529,25 +545,21 @@ function tznew_filter_query($query) {
                 $min_duration = intval($duration_range[0]);
                 $max_duration = intval($duration_range[1]);
                 
-                $query->set('meta_query', array(
-                    array(
-                        'key' => 'duration',
-                        'value' => array($min_duration, $max_duration),
-                        'type' => 'NUMERIC',
-                        'compare' => 'BETWEEN',
-                    ),
-                ));
+                $meta_query[] = array(
+                    'key' => 'duration',
+                    'value' => array($min_duration, $max_duration),
+                    'type' => 'NUMERIC',
+                    'compare' => 'BETWEEN',
+                );
             } elseif (strpos(sanitize_text_field($_GET['duration']), '+') !== false) {
 			$min_duration = intval(sanitize_text_field($_GET['duration']));
                 
-                $query->set('meta_query', array(
-                    array(
-                        'key' => 'duration',
-                        'value' => $min_duration,
-                        'type' => 'NUMERIC',
-                        'compare' => '>=',
-                    ),
-                ));
+                $meta_query[] = array(
+                    'key' => 'duration',
+                    'value' => $min_duration,
+                    'type' => 'NUMERIC',
+                    'compare' => '>=',
+                );
             }
         }
         
@@ -559,26 +571,37 @@ function tznew_filter_query($query) {
                 $min_price = intval($price_range[0]);
                 $max_price = intval($price_range[1]);
                 
-                $query->set('meta_query', array(
-                    array(
-                        'key' => 'cost',
-                        'value' => array($min_price, $max_price),
-                        'type' => 'NUMERIC',
-                        'compare' => 'BETWEEN',
-                    ),
-                ));
+                $meta_query[] = array(
+                    'key' => 'cost',
+                    'value' => array($min_price, $max_price),
+                    'type' => 'NUMERIC',
+                    'compare' => 'BETWEEN',
+                );
             } elseif (strpos(sanitize_text_field($_GET['price']), '+') !== false) {
 			$min_price = intval(sanitize_text_field($_GET['price']));
                 
-                $query->set('meta_query', array(
-                    array(
-                        'key' => 'cost',
-                        'value' => $min_price,
-                        'type' => 'NUMERIC',
-                        'compare' => '>=',
-                    ),
-                ));
+                $meta_query[] = array(
+                    'key' => 'cost',
+                    'value' => $min_price,
+                    'type' => 'NUMERIC',
+                    'compare' => '>=',
+                );
             }
+        }
+        
+        // Set the queries if they have content
+        if (!empty($meta_query)) {
+            if (count($meta_query) > 1) {
+                $meta_query['relation'] = 'AND';
+            }
+            $query->set('meta_query', $meta_query);
+        }
+        
+        if (!empty($tax_query)) {
+            if (count($tax_query) > 1) {
+                $tax_query['relation'] = 'AND';
+            }
+            $query->set('tax_query', $tax_query);
         }
     }
 }

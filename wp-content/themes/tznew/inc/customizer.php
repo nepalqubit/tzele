@@ -329,6 +329,15 @@ function tznew_sanitize_checkbox($checked) {
  */
 function tznew_customize_preview_js() {
     wp_enqueue_script('tznew-customizer', TZNEW_THEME_URI . '/assets/js/customizer.js', ['customize-preview'], TZNEW_VERSION, true);
+    
+    // Enqueue color customizer preview script
+    wp_enqueue_script(
+        'tznew-customizer-preview',
+        get_template_directory_uri() . '/assets/js/customizer-preview.js',
+        ['customize-preview'],
+        defined('TZNEW_VERSION') ? TZNEW_VERSION : '1.0.0',
+        true
+    );
 }
 add_action('customize_preview_init', 'tznew_customize_preview_js');
 

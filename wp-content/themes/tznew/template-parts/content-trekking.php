@@ -645,12 +645,12 @@ if (!defined('ABSPATH')) {
                                         <?php endif; ?>
                                         
                                         <?php if ($calculated_elevation_change !== null) : ?>
-                                            <div class="detail-item <?php echo $calculated_elevation_change >= 0 ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'; ?> p-3 rounded-lg border">
+                                            <div class="detail-item <?php echo $calculated_elevation_change >= 0 ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'; ?> p-3 rounded-lg border">
                                                 <div class="flex items-center">
-                                                    <i class="fas <?php echo $calculated_elevation_change >= 0 ? 'fa-arrow-up text-green-600' : 'fa-arrow-down text-red-600'; ?> mr-2" aria-hidden="true"></i>
-                                                    <span class="text-sm font-semibold <?php echo $calculated_elevation_change >= 0 ? 'text-green-700' : 'text-red-700'; ?>"><?php esc_html_e('Elevation Gain/Loss (m) ±:', 'tznew'); ?></span>
+                                                    <i class="fas <?php echo $calculated_elevation_change >= 0 ? 'fa-arrow-up text-red-600' : 'fa-arrow-down text-green-600'; ?> mr-2" aria-hidden="true"></i>
+                                                    <span class="text-sm font-semibold <?php echo $calculated_elevation_change >= 0 ? 'text-red-700' : 'text-green-700'; ?>"><?php esc_html_e('Elevation Gain/Loss (m) ±:', 'tznew'); ?></span>
                                                 </div>
-                                                <div class="text-lg font-bold <?php echo $calculated_elevation_change >= 0 ? 'text-green-800' : 'text-red-800'; ?> mt-1">
+                                                <div class="text-lg font-bold <?php echo $calculated_elevation_change >= 0 ? 'text-red-800' : 'text-green-800'; ?> mt-1">
                                                     <?php echo $calculated_elevation_change >= 0 ? '+' : ''; ?><?php echo esc_html(number_format($calculated_elevation_change)); ?>m
                                                 </div>
                                             </div>
