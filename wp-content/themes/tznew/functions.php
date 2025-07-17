@@ -187,8 +187,23 @@ function tznew_scripts() {
     // Enqueue jQuery if not already loaded
     wp_enqueue_script('jquery');
     
-    // Enqueue Chart.js for elevation graphs
-    wp_enqueue_script('chartjs', 'https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js', [], '3.9.1', true);
+    // Enqueue Chart.js for elevation graphs (only on tours and trekking pages)
+    if (is_singular(['tours', 'trekking']) || is_post_type_archive(['tours', 'trekking'])) {
+        wp_enqueue_script('chartjs', 'https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js', [], '3.9.1', true);
+        
+        // Add Chart.js loading verification
+        wp_add_inline_script('chartjs', '
+            window.chartJsLoaded = false;
+            document.addEventListener("DOMContentLoaded", function() {
+                if (typeof Chart !== "undefined") {
+                    window.chartJsLoaded = true;
+                    console.log("Chart.js loaded successfully");
+                } else {
+                    console.error("Chart.js failed to load");
+                }
+            });
+        ');
+    }
     
     // Enqueue Leaflet.js for interactive maps
     wp_enqueue_style('leaflet-css', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css', [], '1.9.4');
@@ -242,8 +257,62 @@ if (class_exists('WooCommerce')) {
 // Include Elementor support if Elementor is active
 if (defined('ELEMENTOR_VERSION')) {
     require_once TZNEW_INC_DIR . '/elementor.php';
+    require_once TZNEW_INC_DIR . '/elementor-integration.php';
     require_once TZNEW_THEME_DIR . '/elementor-activation-notice.php';
 }
+
+/**
+ * Add Elementor page template support
+ */
+function tznew_add_elementor_page_templates( $page_templates ) {
+    $page_templates['page-canvas.php'] = esc_html__( 'Elementor Canvas', 'tznew' );
+    $page_templates['page-elementor_header_footer.php'] = esc_html__( 'Elementor Full Width', 'tznew' );
+    return $page_templates;
+}
+add_filter( 'theme_page_templates', 'tznew_add_elementor_page_templates' );
+
+/**
+ * Ensure Elementor content area is properly configured
+ */
+function tznew_elementor_content_area_support() {
+    // Add theme support for Elementor
+    add_theme_support( 'elementor' );
+    
+    // Add support for Elementor Pro features
+    add_theme_support( 'elementor-pro' );
+    
+    // Ensure content width is set for Elementor
+    if ( ! isset( $GLOBALS['content_width'] ) ) {
+        $GLOBALS['content_width'] = 1200;
+    }
+    
+    // Add post type support for Elementor
+    add_post_type_support( 'page', 'elementor' );
+    add_post_type_support( 'post', 'elementor' );
+    add_post_type_support( 'trekking', 'elementor' );
+    add_post_type_support( 'tours', 'elementor' );
+    add_post_type_support( 'blog', 'elementor' );
+    add_post_type_support( 'faq', 'elementor' );
+}
+add_action( 'after_setup_theme', 'tznew_elementor_content_area_support', 20 );
+
+/**
+ * Fix Elementor content area detection
+ */
+function tznew_elementor_content_area_fix() {
+    if ( ! class_exists( '\Elementor\Plugin' ) ) {
+        return;
+    }
+    
+    // Ensure the_content filter is properly applied
+    add_filter( 'the_content', function( $content ) {
+        if ( \Elementor\Plugin::$instance->db->is_built_with_elementor( get_the_ID() ) ) {
+            return \Elementor\Plugin::$instance->frontend->get_builder_content_for_display( get_the_ID() );
+        }
+        return $content;
+    }, 999 );
+}
+add_action( 'wp', 'tznew_elementor_content_area_fix' );
 
 /**
  * AJAX handler for live search
