@@ -1,6 +1,6 @@
 <?php
 /**
- * The template for displaying blog archive
+ * The template for displaying blog archive pages
  *
  * @link https://developer.wordpress.org/themes/basics/template-hierarchy/
  *
@@ -10,7 +10,15 @@
 get_header();
 ?>
 
-<main id="primary" class="site-main">
+<?php
+// Check if Elementor Theme Builder archive template exists for blog
+if ( function_exists( 'tznew_elementor_location_exists' ) && tznew_elementor_location_exists( 'archive' ) ) {
+    // Use Elementor Theme Builder archive template
+    tznew_elementor_do_location( 'archive' );
+} else {
+    // Fallback to default blog archive template
+    ?>
+    <main id="primary" class="site-main">
 	<!-- Hero Section -->
 	<section class="relative h-64 md:h-80 overflow-hidden">
 		<div class="absolute inset-0 bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-800"></div>
@@ -241,5 +249,8 @@ if (!function_exists('tznew_get_reading_time')) {
 		return max(1, $reading_time);
 	}
 }
+    <?php
+}
+?>
 
 get_footer();

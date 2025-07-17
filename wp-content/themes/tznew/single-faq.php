@@ -10,7 +10,15 @@
 get_header();
 ?>
 
-<main id="primary" class="site-main">
+<?php
+// Check if Elementor Theme Builder single template exists for FAQ posts
+if ( function_exists( 'tznew_elementor_location_exists' ) && tznew_elementor_location_exists( 'single' ) ) {
+    // Use Elementor Theme Builder single template
+    tznew_elementor_do_location( 'single' );
+} else {
+    // Fallback to default FAQ template
+    ?>
+    <main id="primary" class="site-main">
 	<div class="container mx-auto px-4 py-8">
 		<div class="max-w-4xl mx-auto">
 			<?php
@@ -119,6 +127,9 @@ get_header();
 		</div>
 	</div>
 </main><!-- #main -->
+    <?php
+}
+?>
 
 <?php
 get_footer();

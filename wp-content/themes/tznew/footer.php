@@ -59,18 +59,24 @@ if ( function_exists( 'tznew_elementor_location_exists' ) && tznew_elementor_loc
 				<div class="footer-section animate-fade-in-up delay-400">
 					<h3 class="text-lg font-bold mb-6 text-white">Contact Info</h3>
 					<div class="space-y-4 text-gray-300">
+						<?php if (tznew_get_company_address()): ?>
 						<div class="flex items-start space-x-3 hover:text-white transition-colors duration-300">
 							<i class="fas fa-location-dot text-blue-400 mt-1"></i>
-							<span>123 Adventure Street, Kathmandu, Nepal</span>
+							<span><?php echo esc_html(tznew_get_company_address()); ?></span>
 						</div>
+						<?php endif; ?>
+						<?php if (tznew_get_company_phone()): ?>
 						<div class="flex items-center space-x-3 hover:text-white transition-colors duration-300">
 							<i class="fas fa-phone text-green-400"></i>
-							<a href="tel:+977-1-234567" class="hover:text-blue-400 transition-colors">+977-1-234567</a>
+							<a href="tel:<?php echo esc_attr(tznew_get_company_phone()); ?>" class="hover:text-blue-400 transition-colors"><?php echo esc_html(tznew_get_company_phone()); ?></a>
 						</div>
+						<?php endif; ?>
+						<?php if (tznew_get_company_email()): ?>
 						<div class="flex items-center space-x-3 hover:text-white transition-colors duration-300">
 							<i class="fas fa-envelope text-yellow-400"></i>
-							<a href="mailto:info@dragonholidays.com" class="hover:text-blue-400 transition-colors">info@dragonholidays.com</a>
+							<a href="mailto:<?php echo esc_attr(tznew_get_company_email()); ?>" class="hover:text-blue-400 transition-colors"><?php echo esc_html(tznew_get_company_email()); ?></a>
 						</div>
+						<?php endif; ?>
 						<div class="flex items-center space-x-3 hover:text-white transition-colors duration-300">
 							<i class="fas fa-clock text-purple-400"></i>
 							<span>24/7 Support Available</span>
@@ -81,21 +87,37 @@ if ( function_exists( 'tznew_elementor_location_exists' ) && tznew_elementor_loc
 				<div class="footer-section animate-fade-in-up delay-600">
 					<h3 class="text-lg font-bold mb-6 text-white">Follow Our Journey</h3>
 					<div class="flex flex-wrap gap-4 mb-6">
-						<a href="#" class="bg-blue-600 hover:bg-blue-700 p-3 rounded-full transition-all duration-300 transform hover:scale-110 hover:shadow-lg" title="Facebook">
-							<i class="fab fa-facebook-f text-lg"></i>
+						<?php 
+						$social_links = tznew_get_social_media_links();
+						$social_configs = [
+							'facebook' => ['icon' => 'fab fa-facebook-f', 'bg' => 'bg-blue-600 hover:bg-blue-700'],
+							'twitter' => ['icon' => 'fab fa-twitter', 'bg' => 'bg-blue-400 hover:bg-blue-500'],
+							'instagram' => ['icon' => 'fab fa-instagram', 'bg' => 'bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700'],
+							'youtube' => ['icon' => 'fab fa-youtube', 'bg' => 'bg-red-600 hover:bg-red-700'],
+							'whatsapp' => ['icon' => 'fab fa-whatsapp', 'bg' => 'bg-green-600 hover:bg-green-700'],
+							'linkedin' => ['icon' => 'fab fa-linkedin-in', 'bg' => 'bg-blue-800 hover:bg-blue-900'],
+							'tripadvisor' => ['icon' => 'fab fa-tripadvisor', 'bg' => 'bg-green-500 hover:bg-green-600']
+						];
+						
+						foreach ($social_links as $platform => $url):
+							if (!empty($url) && isset($social_configs[$platform])):
+								$link_url = ($platform === 'whatsapp') ? 'https://wa.me/' . str_replace(['+', '-', ' '], '', $url) : $url;
+						?>
+						<a href="<?php echo esc_url($link_url); ?>" class="<?php echo esc_attr($social_configs[$platform]['bg']); ?> p-3 rounded-full transition-all duration-300 transform hover:scale-110 hover:shadow-lg" title="<?php echo esc_attr(ucfirst($platform)); ?>" target="_blank" rel="noopener">
+							<i class="<?php echo esc_attr($social_configs[$platform]['icon']); ?> text-lg"></i>
 						</a>
-						<a href="#" class="bg-blue-400 hover:bg-blue-500 p-3 rounded-full transition-all duration-300 transform hover:scale-110 hover:shadow-lg" title="Twitter">
-							<i class="fab fa-twitter text-lg"></i>
-						</a>
-						<a href="#" class="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 p-3 rounded-full transition-all duration-300 transform hover:scale-110 hover:shadow-lg" title="Instagram">
-							<i class="fab fa-instagram text-lg"></i>
-						</a>
-						<a href="#" class="bg-red-600 hover:bg-red-700 p-3 rounded-full transition-all duration-300 transform hover:scale-110 hover:shadow-lg" title="YouTube">
-							<i class="fab fa-youtube text-lg"></i>
-						</a>
-						<a href="#" class="bg-green-600 hover:bg-green-700 p-3 rounded-full transition-all duration-300 transform hover:scale-110 hover:shadow-lg" title="WhatsApp">
+						<?php 
+							endif;
+						endforeach;
+						
+						// Add WhatsApp if available but not in social links
+						if (tznew_get_company_whatsapp() && empty($social_links['whatsapp'])):
+							$whatsapp_url = 'https://wa.me/' . str_replace(['+', '-', ' '], '', tznew_get_company_whatsapp());
+						?>
+						<a href="<?php echo esc_url($whatsapp_url); ?>" class="bg-green-600 hover:bg-green-700 p-3 rounded-full transition-all duration-300 transform hover:scale-110 hover:shadow-lg" title="WhatsApp" target="_blank" rel="noopener">
 							<i class="fab fa-whatsapp text-lg"></i>
 						</a>
+						<?php endif; ?>
 					</div>
 					
 					<div class="bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 border border-gray-700">
@@ -134,11 +156,15 @@ if ( function_exists( 'tznew_elementor_location_exists' ) && tznew_elementor_loc
 				
 				<div class="text-center text-gray-400">
 					<p class="mb-2">
-						&copy; <?php echo date('Y'); ?> <?php bloginfo('name'); ?>. All rights reserved.
+						<?php echo esc_html(tznew_get_footer_copyright()); ?>
+						<?php if (tznew_get_privacy_url()): ?>
 						<span class="mx-2">|</span>
-						<a href="/privacy-policy" class="hover:text-blue-400 transition-colors">Privacy Policy</a>
+						<a href="<?php echo esc_url(tznew_get_privacy_url()); ?>" class="hover:text-blue-400 transition-colors">Privacy Policy</a>
+						<?php endif; ?>
+						<?php if (tznew_get_terms_url()): ?>
 						<span class="mx-2">|</span>
-						<a href="/terms-conditions" class="hover:text-blue-400 transition-colors">Terms & Conditions</a>
+						<a href="<?php echo esc_url(tznew_get_terms_url()); ?>" class="hover:text-blue-400 transition-colors">Terms & Conditions</a>
+						<?php endif; ?>
 					</p>
 					<p class="text-sm">
 						Powered by <a href="https://techzeninc.com" target="_blank" class="text-blue-400 hover:text-blue-300 transition duration-300">TechZen Corporation</a>

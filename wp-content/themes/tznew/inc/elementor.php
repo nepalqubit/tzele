@@ -331,6 +331,84 @@ function tznew_clear_elementor_cache() {
 add_action( 'after_switch_theme', 'tznew_clear_elementor_cache' );
 
 /**
+ * Ensure ACF fields are available in Elementor
+ */
+function tznew_elementor_acf_integration() {
+    if ( ! class_exists( '\Elementor\Plugin' ) || ! function_exists( 'acf_get_field_groups' ) ) {
+        return;
+    }
+    
+    // Force ACF integration
+    add_filter( 'elementor/dynamic_tags/tags', function( $tags ) {
+        // Ensure our custom ACF tags are registered
+        if ( ! isset( $tags['tznew-acf-text'] ) ) {
+            $tags['tznew-acf-text'] = 'TZNEW_ACF_Text_Tag';
+        }
+        if ( ! isset( $tags['tznew-acf-image'] ) ) {
+            $tags['tznew-acf-image'] = 'TZNEW_ACF_Image_Tag';
+        }
+        if ( ! isset( $tags['tznew-acf-url'] ) ) {
+            $tags['tznew-acf-url'] = 'TZNEW_ACF_URL_Tag';
+        }
+        return $tags;
+    });
+    
+    // Ensure ACF fields are available in Elementor editor
+    add_action( 'elementor/editor/before_enqueue_scripts', function() {
+        if ( function_exists( 'acf_get_field_groups' ) ) {
+            $field_groups = acf_get_field_groups();
+            $acf_fields = [];
+            
+            foreach ( $field_groups as $group ) {
+                $fields = acf_get_fields( $group['key'] );
+                if ( $fields ) {
+                    foreach ( $fields as $field ) {
+                        $acf_fields[] = [
+                            'key' => $field['name'],
+                            'label' => $field['label'],
+                            'type' => $field['type']
+                        ];
+                    }
+                }
+            }
+            
+            wp_localize_script( 'elementor-editor', 'tznew_acf_fields', $acf_fields );
+        }
+    });
+}
+add_action( 'elementor/init', 'tznew_elementor_acf_integration' );
+
+/**
+ * Fix content area detection for Elementor
+ */
+function tznew_elementor_content_area_detection() {
+    if ( ! class_exists( '\Elementor\Plugin' ) ) {
+        return;
+    }
+    
+    // Ensure content area is properly detected
+    add_action( 'elementor/frontend/before_render', function() {
+        // Force content area detection
+        if ( ! did_action( 'elementor/theme/before_do_single' ) ) {
+            do_action( 'elementor/theme/before_do_single' );
+        }
+    });
+    
+    // Ensure proper content rendering
+    add_filter( 'elementor/frontend/builder_content_data', function( $data, $post_id ) {
+        if ( empty( $data ) && \Elementor\Plugin::$instance->db->is_built_with_elementor( $post_id ) ) {
+            // Force rebuild content data
+            $document = \Elementor\Plugin::$instance->documents->get( $post_id );
+            if ( $document ) {
+                return $document->get_elements_data();
+            }
+        }
+        return $data;
+    }, 10, 2 );
+}
+add_action( 'wp', 'tznew_elementor_content_area_detection' );
+
+/**
  * Ensure custom post types work with Elementor after theme activation
  */
 function tznew_elementor_theme_activation() {

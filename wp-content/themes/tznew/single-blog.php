@@ -10,7 +10,15 @@
 get_header();
 ?>
 
-<main id="primary" class="site-main">
+<?php
+// Check if Elementor Theme Builder single template exists for blog posts
+if ( function_exists( 'tznew_elementor_location_exists' ) && tznew_elementor_location_exists( 'single' ) ) {
+    // Use Elementor Theme Builder single template
+    tznew_elementor_do_location( 'single' );
+} else {
+    // Fallback to default blog template
+    ?>
+    <main id="primary" class="site-main">
 	<?php
 	while ( have_posts() ) :
 		the_post();
@@ -297,5 +305,8 @@ if (!function_exists('tznew_get_reading_time')) {
 		return max(1, $reading_time);
 	}
 }
+    <?php
+}
+?>
 
 get_footer();

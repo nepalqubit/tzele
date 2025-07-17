@@ -1,6 +1,6 @@
 <?php
 /**
- * The template for displaying FAQ archive
+ * The template for displaying FAQ archive pages
  *
  * @link https://developer.wordpress.org/themes/basics/template-hierarchy/
  *
@@ -10,7 +10,15 @@
 get_header();
 ?>
 
-<main id="primary" class="site-main">
+<?php
+// Check if Elementor Theme Builder archive template exists for FAQ
+if ( function_exists( 'tznew_elementor_location_exists' ) && tznew_elementor_location_exists( 'archive' ) ) {
+    // Use Elementor Theme Builder archive template
+    tznew_elementor_do_location( 'archive' );
+} else {
+    // Fallback to default FAQ archive template
+    ?>
+    <main id="primary" class="site-main">
 	<div class="container mx-auto px-4 py-8">
 		<header class="page-header mb-8">
 			<h1 class="page-title text-4xl font-bold text-center text-gray-900 mb-4">
@@ -158,6 +166,9 @@ document.addEventListener('DOMContentLoaded', function() {
 	});
 });
 </script>
+    <?php
+}
+?>
 
 <?php
 get_footer();

@@ -164,82 +164,177 @@ if (!defined('ABSPATH')) {
                      }
                     ?>
                     
-                    <?php if (!empty($elevation_data)) : ?>
-                        <div class="elevation-graph mb-8 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                            <h3 class="text-lg font-bold mb-4 text-blue-700 flex items-center">
+                     <?php if (!empty($elevation_data)) : ?>
+                        <div class="elevation-graph mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl shadow-sm border border-blue-100">
+                            <h3 class="text-2xl font-bold mb-4 text-blue-800 border-b border-blue-200 pb-3 flex items-center">
                                 <i class="fas fa-chart-line mr-2 text-blue-600" aria-hidden="true"></i>
                                 <?php esc_html_e('Elevation Profile', 'tznew'); ?>
                             </h3>
-                            <div class="elevation-chart-container">
-                                <canvas id="elevationChart" width="800" height="300"></canvas>
+                            <div class="elevation-chart-container relative" style="height: 400px; width: 100%;">
+                                <canvas id="trekkingElevationChart"></canvas>
+                                <div id="trekkingChartLoading" class="absolute inset-0 flex items-center justify-center bg-blue-50 rounded-lg">
+                                    <div class="text-center">
+                                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                                        <p class="text-sm text-blue-600"><?php esc_html_e('Loading elevation chart...', 'tznew'); ?></p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         
                         <script>
                         document.addEventListener('DOMContentLoaded', function() {
-                            const ctx = document.getElementById('elevationChart').getContext('2d');
                             const elevationData = <?php echo json_encode($elevation_data); ?>;
                             
-                            new Chart(ctx, {
-                                type: 'line',
-                                data: {
-                                    labels: elevationData.map(d => 'Day ' + d.day),
-                                    datasets: [{
-                                        label: 'Altitude (m)',
-                                        data: elevationData.map(d => d.altitude),
-                                        borderColor: 'rgb(59, 130, 246)',
-                                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                                        borderWidth: 3,
-                                        fill: true,
-                                        tension: 0.4,
-                                        pointBackgroundColor: 'rgb(59, 130, 246)',
-                                        pointBorderColor: '#fff',
-                                        pointBorderWidth: 2,
-                                        pointRadius: 6
-                                    }]
-                                },
-                                options: {
-                                    responsive: true,
-                                    maintainAspectRatio: false,
-                                    plugins: {
-                                        legend: {
-                                            display: true,
-                                            position: 'top'
+                            function initTrekkingElevationChart() {
+                                const ctx = document.getElementById('trekkingElevationChart');
+                                const loadingDiv = document.getElementById('trekkingChartLoading');
+                                
+                                if (!ctx) {
+                                    console.error('Trekking elevation chart canvas not found');
+                                    return;
+                                }
+                                
+                                if (typeof Chart === 'undefined') {
+                                    console.error('Chart.js library not loaded');
+                                    if (loadingDiv) {
+                                        loadingDiv.innerHTML = '<div class="text-center"><p class="text-sm text-red-600"><?php esc_html_e('Chart library failed to load', 'tznew'); ?></p></div>';
+                                    }
+                                    return;
+                                }
+                                
+                                try {
+                                    new Chart(ctx, {
+                                        type: 'line',
+                                        data: {
+                                            labels: elevationData.map(d => 'Day ' + d.day),
+                                            datasets: [{
+                                                label: '<?php esc_html_e('Altitude (m)', 'tznew'); ?>',
+                                                data: elevationData.map(d => d.altitude),
+                                                borderColor: 'rgb(59, 130, 246)',
+                                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                                borderWidth: 3,
+                                                fill: true,
+                                                tension: 0.4,
+                                                pointBackgroundColor: 'rgb(59, 130, 246)',
+                                                pointBorderColor: '#fff',
+                                                pointBorderWidth: 2,
+                                                pointRadius: 6,
+                                                pointHoverRadius: 8
+                                            }]
                                         },
-                                        tooltip: {
-                                            mode: 'index',
-                                            intersect: false,
-                                            callbacks: {
-                                                label: function(context) {
-                                                    return 'Altitude: ' + context.parsed.y.toLocaleString() + 'm';
+                                        options: {
+                                            responsive: true,
+                                            maintainAspectRatio: false,
+                                            plugins: {
+                                                legend: {
+                                                    display: true,
+                                                    position: 'top',
+                                                    labels: {
+                                                        usePointStyle: true,
+                                                        padding: 20
+                                                    }
+                                                },
+                                                tooltip: {
+                                                    mode: 'index',
+                                                    intersect: false,
+                                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                                    titleColor: '#fff',
+                                                    bodyColor: '#fff',
+                                                    borderColor: 'rgb(59, 130, 246)',
+                                                    borderWidth: 1,
+                                                    callbacks: {
+                                                        label: function(context) {
+                                                            return 'Altitude: ' + context.parsed.y.toLocaleString() + 'm';
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            scales: {
+                                                y: {
+                                                    beginAtZero: false,
+                                                    title: {
+                                                        display: true,
+                                                        text: '<?php esc_html_e('Altitude (meters)', 'tznew'); ?>',
+                                                        font: {
+                                                            size: 14,
+                                                            weight: 'bold'
+                                                        }
+                                                    },
+                                                    grid: {
+                                                        color: 'rgba(0, 0, 0, 0.1)',
+                                                        drawBorder: false
+                                                    },
+                                                    ticks: {
+                                                        callback: function(value) {
+                                                            return value.toLocaleString() + 'm';
+                                                        }
+                                                    }
+                                                },
+                                                x: {
+                                                    title: {
+                                                        display: true,
+                                                        text: '<?php esc_html_e('Days', 'tznew'); ?>',
+                                                        font: {
+                                                            size: 14,
+                                                            weight: 'bold'
+                                                        }
+                                                    },
+                                                    grid: {
+                                                        color: 'rgba(0, 0, 0, 0.1)',
+                                                        drawBorder: false
+                                                    }
+                                                }
+                                            },
+                                            interaction: {
+                                                mode: 'nearest',
+                                                axis: 'x',
+                                                intersect: false
+                                            },
+                                            elements: {
+                                                point: {
+                                                    hoverBackgroundColor: 'rgb(59, 130, 246)',
+                                                    hoverBorderColor: '#fff',
+                                                    hoverBorderWidth: 3
                                                 }
                                             }
                                         }
-                                    },
-                                    scales: {
-                                        x: {
-                                            display: true,
-                                            title: {
-                                                display: true,
-                                                text: 'Days'
-                                            }
-                                        },
-                                        y: {
-                                            display: true,
-                                            title: {
-                                                display: true,
-                                                text: 'Altitude (meters)'
-                                            },
-                                            beginAtZero: false
-                                        }
-                                    },
-                                    interaction: {
-                                        mode: 'nearest',
-                                        axis: 'x',
-                                        intersect: false
+                                    });
+                                    
+                                    // Hide loading indicator
+                                    if (loadingDiv) {
+                                        loadingDiv.style.display = 'none';
+                                    }
+                                    
+                                } catch (error) {
+                                    console.error('Error initializing trekking elevation chart:', error);
+                                    if (loadingDiv) {
+                                        loadingDiv.innerHTML = '<div class="text-center"><p class="text-sm text-red-600"><?php esc_html_e('Failed to load elevation chart', 'tznew'); ?></p></div>';
                                     }
                                 }
-                            });
+                            }
+                            
+                            // Check if Chart.js is already loaded
+                            if (typeof Chart !== 'undefined') {
+                                initTrekkingElevationChart();
+                            } else {
+                                // Wait for Chart.js to load
+                                let checkCount = 0;
+                                const maxChecks = 50; // 5 seconds max wait
+                                const checkInterval = setInterval(function() {
+                                    checkCount++;
+                                    if (typeof Chart !== 'undefined') {
+                                        clearInterval(checkInterval);
+                                        initTrekkingElevationChart();
+                                    } else if (checkCount >= maxChecks) {
+                                        clearInterval(checkInterval);
+                                        console.error('Chart.js failed to load within timeout');
+                                        const loadingDiv = document.getElementById('trekkingChartLoading');
+                                        if (loadingDiv) {
+                                            loadingDiv.innerHTML = '<div class="text-center"><p class="text-sm text-red-600"><?php esc_html_e('Chart library loading timeout', 'tznew'); ?></p></div>';
+                                        }
+                                    }
+                                }, 100);
+                            }
                         });
                         </script>
                     <?php endif; ?>

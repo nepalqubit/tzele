@@ -114,7 +114,7 @@ get_header();
             <div class="max-w-6xl mx-auto">
                 <div class="text-center mb-12">
                     <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-                        <?php esc_html_e('Why Choose Dragon Holidays?', 'tznew'); ?>
+                        <?php printf(esc_html__('Why Choose %s?', 'tznew'), esc_html(tznew_get_company_name())); ?>
                     </h2>
                     <p class="text-lg text-gray-600">
                         <?php esc_html_e('We are committed to providing exceptional travel experiences', 'tznew'); ?>

@@ -10,7 +10,15 @@
 get_header();
 ?>
 
-<main id="primary" class="site-main">
+<?php
+// Check if Elementor Theme Builder archive template exists for tours
+if ( function_exists( 'tznew_elementor_location_exists' ) && tznew_elementor_location_exists( 'archive' ) ) {
+    // Use Elementor Theme Builder archive template
+    tznew_elementor_do_location( 'archive' );
+} else {
+    // Fallback to default tours archive template
+    ?>
+    <main id="primary" class="site-main">
 	<!-- Hero Section -->
 	<section class="relative bg-gradient-to-br from-green-600 via-green-700 to-teal-800 py-20">
 		<div class="absolute inset-0 bg-black/20"></div>
@@ -249,6 +257,9 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 });
 </script>
+    <?php
+}
+?>
 
 <?php
 get_footer();

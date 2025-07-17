@@ -144,7 +144,7 @@ get_header();
                         </div>
                         <h3 class="text-lg font-semibold text-gray-800 mb-2"><?php esc_html_e('Call Us', 'tznew'); ?></h3>
                         <p class="text-gray-600 text-sm mb-3"><?php esc_html_e('Speak directly with our travel experts', 'tznew'); ?></p>
-                        <a href="tel:+977-1-4123456" class="text-blue-600 font-semibold hover:text-blue-700">+977-1-4123456</a>
+                        <a href="tel:<?php echo esc_attr(tznew_get_company_phone()); ?>" class="text-blue-600 font-semibold hover:text-blue-700"><?php echo esc_html(tznew_get_company_phone()); ?></a>
                     </div>
                     
                     <div class="bg-white p-6 rounded-xl shadow-lg text-center hover:shadow-xl transition-shadow duration-300">
@@ -153,7 +153,7 @@ get_header();
                         </div>
                         <h3 class="text-lg font-semibold text-gray-800 mb-2"><?php esc_html_e('Email Us', 'tznew'); ?></h3>
                         <p class="text-gray-600 text-sm mb-3"><?php esc_html_e('Send us detailed questions', 'tznew'); ?></p>
-                        <a href="mailto:info@dragonholidays.com" class="text-green-600 font-semibold hover:text-green-700">info@dragonholidays.com</a>
+                        <a href="mailto:<?php echo esc_attr(tznew_get_company_email()); ?>" class="text-green-600 font-semibold hover:text-green-700"><?php echo esc_html(tznew_get_company_email()); ?></a>
                     </div>
                     
                     <div class="bg-white p-6 rounded-xl shadow-lg text-center hover:shadow-xl transition-shadow duration-300">
@@ -162,7 +162,9 @@ get_header();
                         </div>
                         <h3 class="text-lg font-semibold text-gray-800 mb-2"><?php esc_html_e('WhatsApp', 'tznew'); ?></h3>
                         <p class="text-gray-600 text-sm mb-3"><?php esc_html_e('Quick messages and photos', 'tznew'); ?></p>
-                        <a href="https://wa.me/9779841234567" class="text-purple-600 font-semibold hover:text-purple-700" target="_blank">+977-984-1234567</a>
+                        <?php if (tznew_get_company_whatsapp()): ?>
+                        <a href="https://wa.me/<?php echo esc_attr(str_replace(['+', '-', ' '], '', tznew_get_company_whatsapp())); ?>" class="text-purple-600 font-semibold hover:text-purple-700" target="_blank"><?php echo esc_html(tznew_get_company_whatsapp()); ?></a>
+                        <?php endif; ?>
                     </div>
                     
                     <div class="bg-white p-6 rounded-xl shadow-lg text-center hover:shadow-xl transition-shadow duration-300">
@@ -171,7 +173,7 @@ get_header();
                         </div>
                         <h3 class="text-lg font-semibold text-gray-800 mb-2"><?php esc_html_e('Visit Office', 'tznew'); ?></h3>
                         <p class="text-gray-600 text-sm mb-3"><?php esc_html_e('Meet us in person', 'tznew'); ?></p>
-                        <p class="text-orange-600 font-semibold text-sm">Thamel, Kathmandu<br>Nepal</p>
+                        <p class="text-orange-600 font-semibold text-sm"><?php echo esc_html(tznew_get_company_address()); ?></p>
                     </div>
                 </div>
             </div>

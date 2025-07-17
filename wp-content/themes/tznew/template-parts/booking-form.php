@@ -486,13 +486,13 @@ $price = $cost_info['price_usd'] ?? 0;
                 <?php esc_html_e('Need immediate assistance? Contact us directly:', 'tznew'); ?>
             </p>
             <div class="flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-6">
-                <a href="tel:+977-1-4123456" class="flex items-center space-x-2 text-blue-600 hover:text-blue-800">
+                <a href="tel:<?php echo esc_attr(tznew_get_company_phone()); ?>" class="flex items-center space-x-2 text-blue-600 hover:text-blue-800">
                     <i class="fas fa-phone"></i>
-                    <span>+977-1-4123456</span>
+                    <span><?php echo esc_html(tznew_get_company_phone()); ?></span>
                 </a>
-                <a href="mailto:info@dragonholidays.com" class="flex items-center space-x-2 text-blue-600 hover:text-blue-800">
+                <a href="mailto:<?php echo esc_attr(tznew_get_company_email()); ?>" class="flex items-center space-x-2 text-blue-600 hover:text-blue-800">
                     <i class="fas fa-envelope"></i>
-                    <span>info@dragonholidays.com</span>
+                    <span><?php echo esc_html(tznew_get_company_email()); ?></span>
                 </a>
             </div>
         </div>

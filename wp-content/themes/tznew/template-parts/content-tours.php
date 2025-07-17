@@ -523,97 +523,8 @@ if (!defined('ABSPATH')) {
             <?php endif; ?>
             
             <?php
-            // Elevation Profile section
-            if (tznew_have_rows_safe('itinerary')) :
-                // Collect elevation data for the chart
-                $elevation_data = [];
-                $day_labels = [];
-                $day_count_temp = 1;
-                
-                while (tznew_have_rows_safe('itinerary')) :
-                    tznew_the_row_safe();
-                    $altitude = tznew_get_sub_field_safe('altitude');
-                    $day_title = tznew_get_sub_field_safe('title');
-                    
-                    if ($altitude && is_numeric($altitude)) {
-                        $elevation_data[] = intval($altitude);
-                        $day_labels[] = 'Day ' . $day_count_temp;
-                    }
-                    $day_count_temp++;
-                endwhile;
-                
-                // Reset the loop for display
-                if (function_exists('reset_rows')) {
-                    reset_rows();
-                }
-                
-                if (!empty($elevation_data) && count($elevation_data) > 1) :
+            // Elevation Profile section removed for tours post type
             ?>
-                <div class="elevation-chart mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl shadow-sm border border-blue-100 hover:shadow-md transition-shadow duration-300">
-                    <h2 class="text-2xl font-bold mb-4 text-blue-800 border-b border-blue-200 pb-3 flex items-center">
-                        <i class="fas fa-chart-line mr-2 text-blue-600" aria-hidden="true"></i>
-                        <?php esc_html_e('Elevation Profile', 'tznew'); ?>
-                    </h2>
-                    <canvas id="elevationChart" width="400" height="200"></canvas>
-                </div>
-                
-                <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    const ctx = document.getElementById('elevationChart').getContext('2d');
-                    new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: <?php echo json_encode($day_labels); ?>,
-                            datasets: [{
-                                label: '<?php esc_html_e('Elevation (m)', 'tznew'); ?>',
-                                data: <?php echo json_encode($elevation_data); ?>,
-                                borderColor: 'rgb(34, 197, 94)',
-                                backgroundColor: 'rgba(34, 197, 94, 0.1)',
-                                borderWidth: 3,
-                                fill: true,
-                                tension: 0.4,
-                                pointBackgroundColor: 'rgb(34, 197, 94)',
-                                pointBorderColor: '#fff',
-                                pointBorderWidth: 2,
-                                pointRadius: 5
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    display: true,
-                                    position: 'top'
-                                }
-                            },
-                            scales: {
-                                y: {
-                                    beginAtZero: false,
-                                    title: {
-                                        display: true,
-                                        text: '<?php esc_html_e('Elevation (meters)', 'tznew'); ?>'
-                                    },
-                                    grid: {
-                                        color: 'rgba(0, 0, 0, 0.1)'
-                                    }
-                                },
-                                x: {
-                                    title: {
-                                        display: true,
-                                        text: '<?php esc_html_e('Days', 'tznew'); ?>'
-                                    },
-                                    grid: {
-                                        color: 'rgba(0, 0, 0, 0.1)'
-                                    }
-                                }
-                            }
-                        }
-                    });
-                });
-                </script>
-            <?php 
-                endif;
                 
                 // Route Map section
                 // Collect route coordinates for map
@@ -806,10 +717,7 @@ if (!defined('ABSPATH')) {
                     }
                 });
                 </script>
-            <?php 
-                endif;
-            endif; 
-            ?>
+            <?php endif; ?>
             
             <?php 
             // Gallery section
